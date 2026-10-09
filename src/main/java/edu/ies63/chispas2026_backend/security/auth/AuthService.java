@@ -1,18 +1,18 @@
 package edu.ies63.chispas2026_backend.security.auth;
 
-import edu.ies63.chispas2026_backend.dto.UsuarioCreateDTO;
+import edu.ies63.chispas2026_backend.dtos.UsuarioCreateDTO;
 import edu.ies63.chispas2026_backend.enums.Role;
-import edu.ies63.chispas2026_backend.exception.EmailYaRegistradoException;
-import edu.ies63.chispas2026_backend.model.PasswordResetToken;
-import edu.ies63.chispas2026_backend.model.Usuario;
-import edu.ies63.chispas2026_backend.repository.PasswordResetTokenRepository;
-import edu.ies63.chispas2026_backend.repository.UsuarioRepository;
+import edu.ies63.chispas2026_backend.exceptions.EmailYaRegistradoException;
+import edu.ies63.chispas2026_backend.models.PasswordResetToken;
+import edu.ies63.chispas2026_backend.models.Usuario;
+import edu.ies63.chispas2026_backend.repositories.PasswordResetTokenRepository;
+import edu.ies63.chispas2026_backend.repositories.UsuarioRepository;
 import edu.ies63.chispas2026_backend.security.dto.AuthRequest;
 import edu.ies63.chispas2026_backend.security.dto.AuthResponse;
 import edu.ies63.chispas2026_backend.security.dto.ForgotPasswordRequest;
 import edu.ies63.chispas2026_backend.security.dto.ResetPasswordRequest;
 import edu.ies63.chispas2026_backend.security.jwt.JwtService;
-import edu.ies63.chispas2026_backend.service.EmailService;
+import edu.ies63.chispas2026_backend.services.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package edu.ies63.chispas2026_backend.model;
+package edu.ies63.chispas2026_backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;

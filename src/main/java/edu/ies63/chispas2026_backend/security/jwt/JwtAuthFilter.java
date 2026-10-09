@@ -1,6 +1,6 @@
 package edu.ies63.chispas2026_backend.security.jwt;
 
-import edu.ies63.chispas2026_backend.service.impl.UsuarioServiceImpl;
+import edu.ies63.chispas2026_backend.services.impl.UsuarioServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;

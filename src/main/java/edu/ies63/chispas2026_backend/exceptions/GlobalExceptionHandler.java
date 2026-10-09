@@ -1,4 +1,4 @@
-package edu.ies63.chispas2026_backend.exception;
+package edu.ies63.chispas2026_backend.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 

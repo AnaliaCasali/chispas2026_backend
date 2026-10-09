@@ -1,4 +1,4 @@
-package edu.ies63.chispas2026_backend.service;
+package edu.ies63.chispas2026_backend.services;
 
 import edu.ies63.chispas2026_backend.security.dto.CambiarPasswordRequest;
 import org.springframework.stereotype.Service;

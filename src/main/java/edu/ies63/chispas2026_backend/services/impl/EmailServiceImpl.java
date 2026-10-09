@@ -1,6 +1,6 @@
-package edu.ies63.chispas2026_backend.service.impl;
+package edu.ies63.chispas2026_backend.services.impl;
 
-import edu.ies63.chispas2026_backend.service.EmailService;
+import edu.ies63.chispas2026_backend.services.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

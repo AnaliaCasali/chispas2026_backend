@@ -1,7 +1,7 @@
-package edu.ies63.chispas2026_backend.repository;
+package edu.ies63.chispas2026_backend.repositories;
 
-import edu.ies63.chispas2026_backend.model.PasswordResetToken;
-import edu.ies63.chispas2026_backend.model.Usuario;
+import edu.ies63.chispas2026_backend.models.PasswordResetToken;
+import edu.ies63.chispas2026_backend.models.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

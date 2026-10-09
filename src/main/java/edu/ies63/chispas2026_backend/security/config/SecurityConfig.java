@@ -1,7 +1,7 @@
 package edu.ies63.chispas2026_backend.security.config;
 
  import edu.ies63.chispas2026_backend.security.jwt.JwtAuthFilter;
- import edu.ies63.chispas2026_backend.service.impl.UsuarioServiceImpl;
+ import edu.ies63.chispas2026_backend.services.impl.UsuarioServiceImpl;
  import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

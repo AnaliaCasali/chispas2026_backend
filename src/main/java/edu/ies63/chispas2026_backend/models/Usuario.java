@@ -1,4 +1,4 @@
-package edu.ies63.chispas2026_backend.model;
+package edu.ies63.chispas2026_backend.models;
 
 import edu.ies63.chispas2026_backend.enums.Role;
 import jakarta.persistence.*;

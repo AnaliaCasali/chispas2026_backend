@@ -1,6 +1,6 @@
 package edu.ies63.chispas2026_backend.security.auth;
 
-import edu.ies63.chispas2026_backend.dto.UsuarioCreateDTO;
+import edu.ies63.chispas2026_backend.dtos.UsuarioCreateDTO;
 import edu.ies63.chispas2026_backend.security.dto.AuthRequest;
 import edu.ies63.chispas2026_backend.security.dto.AuthResponse;
 import edu.ies63.chispas2026_backend.security.dto.ForgotPasswordRequest;

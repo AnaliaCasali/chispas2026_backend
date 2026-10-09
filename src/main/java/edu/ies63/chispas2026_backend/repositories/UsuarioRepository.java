@@ -1,10 +1,9 @@
-package edu.ies63.chispas2026_backend.repository;
+package edu.ies63.chispas2026_backend.repositories;
 
  import edu.ies63.chispas2026_backend.enums.Role;
- import edu.ies63.chispas2026_backend.model.Usuario;
+ import edu.ies63.chispas2026_backend.models.Usuario;
  import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;

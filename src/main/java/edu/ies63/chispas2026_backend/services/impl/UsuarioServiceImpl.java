@@ -1,12 +1,12 @@
-package edu.ies63.chispas2026_backend.service.impl;
+package edu.ies63.chispas2026_backend.services.impl;
 
-import edu.ies63.chispas2026_backend.dto.UsuarioResponseDTO;
-import edu.ies63.chispas2026_backend.exception.PasswordInvalidaException;
-import edu.ies63.chispas2026_backend.exception.UsuarioNoEncontradoException;
-import edu.ies63.chispas2026_backend.model.Usuario;
-import edu.ies63.chispas2026_backend.repository.UsuarioRepository;
+import edu.ies63.chispas2026_backend.dtos.UsuarioResponseDTO;
+import edu.ies63.chispas2026_backend.exceptions.PasswordInvalidaException;
+import edu.ies63.chispas2026_backend.exceptions.UsuarioNoEncontradoException;
+import edu.ies63.chispas2026_backend.models.Usuario;
+import edu.ies63.chispas2026_backend.repositories.UsuarioRepository;
 import edu.ies63.chispas2026_backend.security.dto.CambiarPasswordRequest;
-import edu.ies63.chispas2026_backend.service.UsuarioService;
+import edu.ies63.chispas2026_backend.services.UsuarioService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
-import java.util.List;
 
 @Service
 @Slf4j
