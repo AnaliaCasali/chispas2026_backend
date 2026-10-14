@@ -43,24 +43,17 @@ public class AuthService {
 
 
   public AuthResponse authenticate(@Valid AuthRequest request) {
+    Usuario user = userRepository.findByUsernameOrDni(request.username(), request.username())
+          .orElseThrow(() -> new ResponseStatusException(
+              HttpStatus.UNAUTHORIZED,
+              "Credenciales inválidas"));
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            request.username(),
+            user.getUsername(),
             request.password()
         )
     );
-
-    Usuario user = userRepository.findByUsername(request.username())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.UNAUTHORIZED,
-            "Usuario no encontrado: " + request.username()));
-
-/*        Map<String, Object> claims = new HashMap<>();
-        claims.put("rol", user.getRole().name());
-
-        return new AuthResponse(jwtService.generateToken(claims, user));*/
     return guardarYGenerarToken(user);
-
   }
 
   @Transactional
