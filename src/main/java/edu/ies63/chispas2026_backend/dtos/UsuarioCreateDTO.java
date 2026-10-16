@@ -14,9 +14,14 @@ public record UsuarioCreateDTO(
         "8 y 20 caracteres")
     String password,
 
-    @NotBlank(message = "El nombre del grupo no puede estar vacío")
+    @NotBlank(message = "El nombre no puede estar vacío")
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-    String nombre
+    String nombre,
+
+    @NotBlank (message = "El DNI no puede estar vacío")
+    @Size(min = 8, max = 8, message = "El DNI debe tener 8 caracteres")
+    String dni
+
 
 ) {
 

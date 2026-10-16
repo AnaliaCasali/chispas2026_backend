@@ -3,6 +3,7 @@ package edu.ies63.chispas2026_backend.models;
 import edu.ies63.chispas2026_backend.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,9 @@ public class Usuario implements UserDetails {
 
     @Column(name = "nombre_completo", nullable = false)
     private String nombre;
+
+    @Column(name = "dni", unique = true, nullable = false)
+    private String dni;
 
 
     @CreationTimestamp

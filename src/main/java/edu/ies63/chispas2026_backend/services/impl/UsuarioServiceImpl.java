@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,18 +34,25 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
         usuario.getId(),
         usuario.getUsername(),
         usuario.getRole(),
-        usuario.getNombre());
-  }
+        usuario.getNombre(),
+        usuario.getDni()
+    );
+}
 
 
 
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    return usuarioRepository.findByUsername(username)
-        .orElseThrow(() ->
-            new UsernameNotFoundException("Usuario no encontrado: " + username));
+    return buscarPorIdentificador(username)
+          .orElseThrow(() ->
+              new UsernameNotFoundException("Usuario no encontrado: " + username));
   }
+    
+  public Optional<Usuario> buscarPorIdentificador(String identificador){
+    return usuarioRepository.findByUsernameOrDni(identificador, identificador);
+  }
+  
 
   @Override
   @Transactional
