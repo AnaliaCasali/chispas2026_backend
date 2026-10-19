@@ -2,6 +2,7 @@ package edu.ies63.chispas2026_backend.security.auth;
 
 import edu.ies63.chispas2026_backend.dtos.UsuarioCreateDTO;
 import edu.ies63.chispas2026_backend.enums.Role;
+import edu.ies63.chispas2026_backend.exceptions.DniYaRegistradoException;
 import edu.ies63.chispas2026_backend.exceptions.EmailYaRegistradoException;
 import edu.ies63.chispas2026_backend.models.PasswordResetToken;
 import edu.ies63.chispas2026_backend.models.Usuario;
@@ -43,7 +44,7 @@ public class AuthService {
 
 
   public AuthResponse authenticate(@Valid AuthRequest request) {
-    Usuario user = userRepository.findByUsernameOrDni(request.username(), request.username())
+    Usuario user = userRepository.findByEmailOrDni(request.username(), request.username())
           .orElseThrow(() -> new ResponseStatusException(
               HttpStatus.UNAUTHORIZED,
               "Credenciales inválidas"));
@@ -58,14 +59,17 @@ public class AuthService {
 
   @Transactional
   public AuthResponse registerUsuario(UsuarioCreateDTO request) {
-    validarUsernameDisponible(request.username());
+    validarUsuarioDisponible(request.email(), request.dni());
 
     Usuario user = Usuario.builder()
         .nombre(request.nombre())
-        .username(request.username())
+        .apellido(request.apellido())
+        .dni(request.dni())
+        .email(request.email())
         .password(passwordEncoder.encode(request.password()))
-        .role(Role.USUARIO)          // ← rol FIJO, no viene del cliente
-        .debaja(false)
+        .fotoUrl(request.fotoUrl())
+        .role(Role.ESTUDIANTE)          // ← rol FIJO
+        .activo(true)
         .build();
 
     return guardarYGenerarToken(user);
@@ -86,20 +90,23 @@ public class AuthService {
     return new AuthResponse(jwtService.generateToken(claims, user));
   }
 
-  private void validarUsernameDisponible(String username) {
-    if (userRepository.findByUsername(username).isPresent()) {
-      throw new EmailYaRegistradoException("El usuario ya existe: " + username);
+  private void validarUsuarioDisponible(String email, String dni) {
+    if (email != null && userRepository.findByEmail(email).isPresent()) {
+      throw new EmailYaRegistradoException("El email ya está registrado: " + email);
+    }
+    if(userRepository.findByDni(dni).isPresent()) {
+      throw new DniYaRegistradoException("El DNI ya está registrado: " + dni);
     }
   }
 
 
   @Transactional
   public void requestPasswordReset(ForgotPasswordRequest request) {
-    Usuario user = userRepository.findByUsername(request.email())
-            .or(() -> userRepository.findByUsername(request.email()))
+    Usuario user = userRepository.findByEmail(request.email())
             .orElse(null);
+         
 
-    if (user == null) {
+    if (user == null || user.getEmail() == null) {
       return;
     }
 
@@ -117,7 +124,7 @@ public class AuthService {
     resetTokenRepository.save(resetToken);
 
     // 3. Enviar correo electrónico
-    emailService.sendPasswordResetEmail(user.getUsername(), token);
+    emailService.sendPasswordResetEmail(user.getEmail(), token);
   }
 
   @Transactional

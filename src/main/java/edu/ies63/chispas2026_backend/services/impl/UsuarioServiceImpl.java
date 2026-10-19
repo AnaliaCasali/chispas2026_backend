@@ -32,10 +32,15 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
   private UsuarioResponseDTO toResponseDTO(Usuario usuario) {
     return new UsuarioResponseDTO(
         usuario.getId(),
-        usuario.getUsername(),
-        usuario.getRole(),
+        usuario.getEmail(),
         usuario.getNombre(),
-        usuario.getDni()
+        usuario.getApellido(),
+        usuario.getDni(),
+        usuario.getFotoUrl(),
+        usuario.getRole(),
+        usuario.isActivo()
+       
+        
     );
 }
 
@@ -50,7 +55,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
   }
     
   public Optional<Usuario> buscarPorIdentificador(String identificador){
-    return usuarioRepository.findByUsernameOrDni(identificador, identificador);
+    return usuarioRepository.findByEmailOrDni(identificador, identificador);
   }
   
 
@@ -59,7 +64,7 @@ public class UsuarioServiceImpl implements UsuarioService, UserDetailsService {
   public void cambiarPassword(CambiarPasswordRequest request, Principal connectedUser) {
     String username = connectedUser.getName();
 
-    Usuario usuario = usuarioRepository.findByUsername(username)
+    Usuario usuario = usuarioRepository.findByEmailOrDni(username, username)
             .orElseThrow(() -> new UsuarioNoEncontradoException("No se encontró el usuario: " + username));
 
     if (request.newPassword() == null || request.newPassword().length() < 8) {
