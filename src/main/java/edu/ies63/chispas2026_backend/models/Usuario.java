@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "Usuarios")
+@Table(name = "usuario")
 @Data // getters y setters, toString, equals, etc
 @Builder
 @NoArgsConstructor // constructor sin argumentos
