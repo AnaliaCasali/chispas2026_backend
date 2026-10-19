@@ -29,30 +29,36 @@ public class Usuario implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "email", unique = true, length = 120)
     @Email
-    private String username;
+    private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash",nullable = false, length = 100)
     private String password;
+
+    @Column(name = "nombre", nullable = false, length = 60)
+    private String nombre;
+
+    @Column(name = "apellido", nullable = false, length = 60)
+    private String apellido;
+
+    @Column(name = "dni", unique = true, nullable = false, length = 12)
+    private String dni;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
     private Role role;
 
-    @Column(name = "nombre_completo", nullable = false)
-    private String nombre;
-
-    @Column(name = "dni", unique = true, nullable = false)
-    private String dni;
-
+    @Column(name = "foto_url", length = 255)
+    private String fotoUrl; 
+   
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;  
 
     @CreationTimestamp
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private LocalDateTime fechaRegistro;
+    @Column(name = "creado_en", nullable = false, updatable = false)
+    private LocalDateTime creadoEn; 
 
-    // en vez de eliminar la cuenta, estado de cuenta
-    private boolean debaja = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
@@ -75,7 +81,12 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return activo;
     }
+
+    @Override 
+    public String getUsername() {
+            return (email != null) ? email : dni; 
+        }
 
 }

@@ -1,8 +1,11 @@
 package edu.ies63.chispas2026_backend.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -53,6 +56,7 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.CONFLICT, "Conflicto de registro", ex.getMessage());
   }
 
+   
   // Manejo de contraseñas inválidas (400)
   @ExceptionHandler(PasswordInvalidaException.class)
   public ResponseEntity<Map<String, Object>> handleInvalidPassword(PasswordInvalidaException ex) {
@@ -83,6 +87,12 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(response, status);
   }
 
+
+  // Manejo de DNI duplicado (409)
+  @ExceptionHandler(DniYaRegistradoException.class)                   
+  public ResponseEntity<Map<String, Object>> handleDniAlreadyRegistered(DniYaRegistradoException ex) {
+    return buildResponse(HttpStatus.CONFLICT, "Conflicto de registro", ex.getMessage());
+  }
 
 
 

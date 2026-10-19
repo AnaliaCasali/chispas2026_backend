@@ -5,9 +5,12 @@ import edu.ies63.chispas2026_backend.enums.Role;
 
 public record UsuarioResponseDTO(
     Long id,
-    String username,
-    Role role,
+    String email,
     String nombre,
-    String dni
+    String apellido,
+    String dni,
+    String fotoUrl,
+    Role role,
+    boolean activo
 ) {
 }

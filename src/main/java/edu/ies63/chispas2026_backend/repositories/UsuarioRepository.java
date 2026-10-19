@@ -11,7 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    Optional<Usuario> findByUsername(String username);
-    List<Usuario> findByDebajaFalseAndRoleIn(Collection<Role> roles);
-    Optional<Usuario> findByUsernameOrDni(String username, String dni);
+    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByDni(String dni);
+    Optional<Usuario> findByEmailOrDni(String email, String dni);
+    List<Usuario> findByActivoTrueAndRoleIn(Collection<Role> roles);
 }
