@@ -166,7 +166,8 @@ public class CarpetaServiceImpl implements CarpetaService {
 
   // TSDS-4: se agregan tipo de actividad, imagen (portada del contenido), realizada y esHoy.
   // "Completada" pasa a "Realizada"; EN_CURSO se muestra como Pendiente
-  private ActividadCarpetaDTO toActividadDTO(Tarea tarea, LocalDate hoy) {
+  // TSDS-6: pasa a static y visible en el paquete para reutilizarlo en InicioServiceImpl
+  static ActividadCarpetaDTO toActividadDTO(Tarea tarea, LocalDate hoy) {
     Actividad actividad = tarea.getActividad();
     Plantilla plantilla = actividad.getPlantilla();
     boolean realizada = tarea.getEstado() == EstadoTarea.FINALIZADA;

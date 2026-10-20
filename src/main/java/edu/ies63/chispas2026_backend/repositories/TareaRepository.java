@@ -25,4 +25,19 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
          ORDER BY t.fechaAsignacion DESC, t.asignadaEn DESC, t.id DESC
         """)
     List<Tarea> findAsignadasHastaHoy(Long carpetaEspacioId, LocalDate hoy);
+
+    // TSDS-6: pendientes (todo lo que no esta FINALIZADA, EN_CURSO incluida) de todas las
+    // materias de una carpeta, asignadas hasta hoy. Mismo orden que findAsignadasHastaHoy,
+    // asi la primera de cada materia es la actividad principal del Inicio
+    @Query("""
+        SELECT t FROM Tarea t
+          JOIN FETCH t.actividad a
+          JOIN FETCH a.plantilla
+          JOIN FETCH a.contenido
+         WHERE t.carpetaEspacio.carpeta.id = :carpetaId
+           AND t.fechaAsignacion <= :hoy
+           AND t.estado <> edu.ies63.chispas2026_backend.enums.EstadoTarea.FINALIZADA
+         ORDER BY t.fechaAsignacion DESC, t.asignadaEn DESC, t.id DESC
+        """)
+    List<Tarea> findPendientesHastaHoy(Long carpetaId, LocalDate hoy);
 }
