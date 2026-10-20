@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -61,6 +62,18 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(PasswordInvalidaException.class)
   public ResponseEntity<Map<String, Object>> handleInvalidPassword(PasswordInvalidaException ex) {
     return buildResponse(HttpStatus.BAD_REQUEST, "Error de validación de seguridad", ex.getMessage());
+  }
+
+  // Manejo de acceso a carpeta de otro alumno (403)
+  @ExceptionHandler(AccesoDenegadoException.class)
+  public ResponseEntity<Map<String, Object>> handleAccesoDenegado(AccesoDenegadoException ex) {
+    return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+  }
+
+  // Manejo de rol sin permiso (403)
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+    return buildResponse(HttpStatus.FORBIDDEN, "No tienes permiso para acceder a este recurso", null);
   }
 
    // Manejo genérico para cualquier otro error (500)
