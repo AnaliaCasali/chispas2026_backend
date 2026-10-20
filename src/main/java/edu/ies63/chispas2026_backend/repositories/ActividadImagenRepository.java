@@ -1,0 +1,14 @@
+package edu.ies63.chispas2026_backend.repositories;
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import edu.ies63.chispas2026_backend.models.ActividadImagen;
+
+@Repository
+public interface ActividadImagenRepository {
+
+List<ActividadImagen> findByActividadId(Long actividadId);
+
+}

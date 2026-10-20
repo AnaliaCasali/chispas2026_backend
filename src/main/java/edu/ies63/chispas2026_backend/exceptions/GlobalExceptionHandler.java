@@ -107,6 +107,16 @@ public class GlobalExceptionHandler {
     return buildResponse(HttpStatus.CONFLICT, "Conflicto de registro", ex.getMessage());
   }
 
+  // Manejo de entrega sobre tarea ya finalizada (409)
+  @ExceptionHandler(TareaYaFinalizadaException.class)
+  public ResponseEntity<Map<String, Object>> handleTareaYaFinalizada(TareaYaFinalizadaException ex) {
+    return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
+}
+
+@ExceptionHandler(RespuestaInvalidaException.class)
+public ResponseEntity<Map<String, Object>> handleRespuestaInvalida(RespuestaInvalidaException ex) {
+  return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+}
 
 
 }
