@@ -2,6 +2,7 @@ package edu.ies63.chispas2026_backend.security.config;
 
  import edu.ies63.chispas2026_backend.security.jwt.JwtAuthFilter;
  import edu.ies63.chispas2026_backend.services.impl.UsuarioServiceImpl;
+ import jakarta.servlet.http.HttpServletResponse;
  import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -91,7 +92,14 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
-            ).authenticationProvider(authenticationProvider())
+            )
+            // TSDS-4: sin token devuelve 401 (antes Spring devolvia 403), mismo formato que JwtAuthFilter
+            .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, authEx) -> {
+              res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              res.setContentType("application/json;charset=UTF-8");
+              res.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Debes iniciar sesión\"}");
+            }))
+            .authenticationProvider(authenticationProvider())
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(h -> h

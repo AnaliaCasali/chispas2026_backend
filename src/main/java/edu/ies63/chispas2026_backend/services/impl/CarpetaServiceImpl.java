@@ -4,14 +4,17 @@ import edu.ies63.chispas2026_backend.dtos.ActividadCarpetaDTO;
 import edu.ies63.chispas2026_backend.dtos.ActividadesMateriaDTO;
 import edu.ies63.chispas2026_backend.dtos.MateriaCarpetaDTO;
 import edu.ies63.chispas2026_backend.dtos.MiCarpetaDTO;
+import edu.ies63.chispas2026_backend.dtos.TipoActividadDTO;
 import edu.ies63.chispas2026_backend.enums.DiaSemana;
 import edu.ies63.chispas2026_backend.enums.EstadoTarea;
 import edu.ies63.chispas2026_backend.enums.EtiquetaMateria;
 import edu.ies63.chispas2026_backend.exceptions.AccesoDenegadoException;
+import edu.ies63.chispas2026_backend.models.Actividad;
 import edu.ies63.chispas2026_backend.models.Carpeta;
 import edu.ies63.chispas2026_backend.models.CarpetaEspacio;
 import edu.ies63.chispas2026_backend.models.EspacioCurricular;
 import edu.ies63.chispas2026_backend.models.Horario;
+import edu.ies63.chispas2026_backend.models.Plantilla;
 import edu.ies63.chispas2026_backend.models.Tarea;
 import edu.ies63.chispas2026_backend.models.Usuario;
 import edu.ies63.chispas2026_backend.repositories.CarpetaEspacioRepository;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -126,10 +130,13 @@ public class CarpetaServiceImpl implements CarpetaService {
       throw new AccesoDenegadoException(MSG_SIN_PERMISO);
     }
 
+    // TSDS-4: "hoy" con la hora de Argentina; solo tareas asignadas hasta hoy,
+    // ordenadas por fecha y hora de asignacion (la mas nueva primero)
+    LocalDate hoy = LocalDate.now(clock);
     List<ActividadCarpetaDTO> actividades = tareaRepository
-        .findByCarpetaEspacioIdOrderByFechaAsignacionDescIdDesc(carpetaEspacioId)
+        .findAsignadasHastaHoy(carpetaEspacioId, hoy)
         .stream()
-        .map(this::toActividadDTO)
+        .map(tarea -> toActividadDTO(tarea, hoy))
         .toList();
 
     EspacioCurricular espacio = seccion.getEspacioCurricular();
@@ -157,13 +164,22 @@ public class CarpetaServiceImpl implements CarpetaService {
     );
   }
 
-  private ActividadCarpetaDTO toActividadDTO(Tarea tarea) {
+  // TSDS-4: se agregan tipo de actividad, imagen (portada del contenido), realizada y esHoy.
+  // "Completada" pasa a "Realizada"; EN_CURSO se muestra como Pendiente
+  private ActividadCarpetaDTO toActividadDTO(Tarea tarea, LocalDate hoy) {
+    Actividad actividad = tarea.getActividad();
+    Plantilla plantilla = actividad.getPlantilla();
+    boolean realizada = tarea.getEstado() == EstadoTarea.FINALIZADA;
     return new ActividadCarpetaDTO(
         tarea.getId(),
-        tarea.getActividad().getId(),
-        tarea.getActividad().getTitulo(),
+        actividad.getId(),
+        actividad.getTitulo(),
+        new TipoActividadDTO(plantilla.getCodigo(), plantilla.getNombre()),
+        actividad.getContenido().getPortadaUrl(),
         tarea.getFechaAsignacion(),
-        tarea.getEstado() == EstadoTarea.FINALIZADA ? "Completada" : "Pendiente"
+        realizada ? "Realizada" : "Pendiente",
+        realizada,
+        tarea.getFechaAsignacion().equals(hoy)
     );
   }
 }
