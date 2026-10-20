@@ -1,8 +1,11 @@
 package edu.ies63.chispas2026_backend.services.impl;
 
+import edu.ies63.chispas2026_backend.dtos.ActividadCarpetaDTO;
 import edu.ies63.chispas2026_backend.dtos.ActividadesMateriaDTO;
 import edu.ies63.chispas2026_backend.dtos.MateriaCarpetaDTO;
 import edu.ies63.chispas2026_backend.dtos.MiCarpetaDTO;
+import edu.ies63.chispas2026_backend.dtos.TipoActividadDTO;
+import edu.ies63.chispas2026_backend.enums.CodigoPlantilla;
 import edu.ies63.chispas2026_backend.enums.DiaSemana;
 import edu.ies63.chispas2026_backend.enums.EstadoTarea;
 import edu.ies63.chispas2026_backend.enums.EtiquetaMateria;
@@ -108,14 +111,24 @@ class CarpetaServiceImplTest {
     assertThat(dto.materias()).extracting(MateriaCarpetaDTO::etiqueta).containsOnlyNulls();
   }
 
+  // TSDS-4: arma una tarea con su actividad, plantilla y contenido (lo que usa el DTO)
+  private Tarea tarea(long id, String titulo, CodigoPlantilla codigo, String fecha, EstadoTarea estado) {
+    Plantilla plantilla = Plantilla.builder().codigo(codigo)
+        .nombre(codigo == CodigoPlantilla.ORDENAR ? "Ordenar la historia" : "Relación con imágenes").build();
+    Contenido contenido = Contenido.builder().portadaUrl("https://img/portada-" + id + ".jpg").build();
+    Actividad actividad = Actividad.builder().id(id * 10).titulo(titulo)
+        .plantilla(plantilla).contenido(contenido).build();
+    return Tarea.builder().id(id).actividad(actividad)
+        .fechaAsignacion(LocalDate.parse(fecha)).estado(estado).build();
+  }
+
+  // TSDS-4: editado. "Completada" pasa a "Realizada", se usa la nueva consulta del repo
   @Test
   void materiaConActividades_muestraTituloFechaYEstado() {
-    Tarea finalizada = Tarea.builder().id(1L).fechaAsignacion(LocalDate.of(2026, 10, 16))
-        .estado(EstadoTarea.FINALIZADA).actividad(Actividad.builder().id(1L).titulo("Ordenar la historia").build()).build();
-    Tarea pendiente = Tarea.builder().id(2L).fechaAsignacion(LocalDate.of(2026, 10, 16))
-        .estado(EstadoTarea.EN_CURSO).actividad(Actividad.builder().id(3L).titulo("Unir con flechas").build()).build();
+    Tarea finalizada = tarea(1L, "Ordenar la historia", CodigoPlantilla.ORDENAR, "2026-10-16", EstadoTarea.FINALIZADA);
+    Tarea pendiente = tarea(2L, "Unir con flechas", CodigoPlantilla.UNIR_FLECHAS, "2026-10-16", EstadoTarea.EN_CURSO);
     when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
-    when(tareaRepository.findByCarpetaEspacioIdOrderByFechaAsignacionDescIdDesc(3L))
+    when(tareaRepository.findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19)))
         .thenReturn(List.of(pendiente, finalizada));
 
     ActividadesMateriaDTO dto = servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 3L);
@@ -123,14 +136,88 @@ class CarpetaServiceImplTest {
     assertThat(dto.mensaje()).isNull();
     assertThat(dto.actividades()).hasSize(2);
     assertThat(dto.actividades().get(0).estado()).isEqualTo("Pendiente");
-    assertThat(dto.actividades().get(1).estado()).isEqualTo("Completada");
+    assertThat(dto.actividades().get(1).estado()).isEqualTo("Realizada");
     assertThat(dto.actividades().get(1).titulo()).isEqualTo("Ordenar la historia");
   }
 
+  // TSDS-4: el service pide al repo solo hasta la fecha de hoy en Argentina
+  @Test
+  void consultaSoloTareasAsignadasHastaHoy() {
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
+    when(tareaRepository.findAsignadasHastaHoy(anyLong(), any())).thenReturn(List.of());
+
+    // 23:30 del 19 en Argentina ya es 20 en UTC: hoy tiene que ser 19
+    servicioA("2026-10-19T23:30").obtenerActividadesDeMateria(mariel, 3L);
+
+    verify(tareaRepository).findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19));
+  }
+
+  // TSDS-4: respeta el orden que devuelve el repo (fecha y hora desc) sin reordenar
+  @Test
+  void mantieneElOrdenDelRepositorio() {
+    Tarea nueva = tarea(5L, "Mi mañana", CodigoPlantilla.ORDENAR, "2026-10-19", EstadoTarea.PENDIENTE);
+    Tarea mismoDiaMasTemprano = tarea(9L, "Unir con flechas", CodigoPlantilla.UNIR_FLECHAS, "2026-10-19", EstadoTarea.PENDIENTE);
+    Tarea vieja = tarea(1L, "Ordenar la historia", CodigoPlantilla.ORDENAR, "2026-10-08", EstadoTarea.FINALIZADA);
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
+    when(tareaRepository.findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19)))
+        .thenReturn(List.of(nueva, mismoDiaMasTemprano, vieja));
+
+    ActividadesMateriaDTO dto = servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 3L);
+
+    assertThat(dto.actividades()).extracting(ActividadCarpetaDTO::tareaId).containsExactly(5L, 9L, 1L);
+  }
+
+  // TSDS-4: esHoy solo para las asignadas hoy (etiqueta HOY en el front)
+  @Test
+  void marcaEsHoySoloEnLasAsignadasHoy() {
+    Tarea deHoy = tarea(2L, "Unir con flechas", CodigoPlantilla.UNIR_FLECHAS, "2026-10-19", EstadoTarea.PENDIENTE);
+    Tarea deAyer = tarea(1L, "Ordenar la historia", CodigoPlantilla.ORDENAR, "2026-10-18", EstadoTarea.PENDIENTE);
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
+    when(tareaRepository.findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19))).thenReturn(List.of(deHoy, deAyer));
+
+    ActividadesMateriaDTO dto = servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 3L);
+
+    assertThat(dto.actividades()).extracting(ActividadCarpetaDTO::esHoy).containsExactly(true, false);
+  }
+
+  // TSDS-4: solo FINALIZADA es realizada; PENDIENTE y EN_CURSO se muestran como pendientes
+  @Test
+  void realizadaSoloSiEstaFinalizada() {
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
+    when(tareaRepository.findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19))).thenReturn(List.of(
+        tarea(3L, "A", CodigoPlantilla.ORDENAR, "2026-10-16", EstadoTarea.FINALIZADA),
+        tarea(2L, "B", CodigoPlantilla.ORDENAR, "2026-10-16", EstadoTarea.EN_CURSO),
+        tarea(1L, "C", CodigoPlantilla.ORDENAR, "2026-10-16", EstadoTarea.PENDIENTE)
+    ));
+
+    ActividadesMateriaDTO dto = servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 3L);
+
+    assertThat(dto.actividades()).extracting(ActividadCarpetaDTO::realizada).containsExactly(true, false, false);
+    assertThat(dto.actividades()).extracting(ActividadCarpetaDTO::estado)
+        .containsExactly("Realizada", "Pendiente", "Pendiente");
+  }
+
+  // TSDS-4: cada tarea trae tipo de actividad e imagen (portada del contenido)
+  @Test
+  void incluyeTipoDeActividadEImagen() {
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(3L)).thenReturn(Optional.of(lengua));
+    when(tareaRepository.findAsignadasHastaHoy(3L, LocalDate.of(2026, 10, 19))).thenReturn(List.of(
+        tarea(2L, "Unir con flechas", CodigoPlantilla.UNIR_FLECHAS, "2026-10-16", EstadoTarea.PENDIENTE)));
+
+    ActividadCarpetaDTO actividad = servicioA("2026-10-19T09:40")
+        .obtenerActividadesDeMateria(mariel, 3L).actividades().get(0);
+
+    assertThat(actividad.tipoActividad())
+        .isEqualTo(new TipoActividadDTO(CodigoPlantilla.UNIR_FLECHAS, "Relación con imágenes"));
+    assertThat(actividad.imagenUrl()).isEqualTo("https://img/portada-2.jpg");
+    assertThat(actividad.actividadId()).isEqualTo(20L);
+  }
+
+  // TSDS-4: editado, usa la nueva consulta del repo
   @Test
   void materiaSinActividades_muestraMensaje() {
     when(carpetaEspacioRepository.findConEspacioYCarpetaById(5L)).thenReturn(Optional.of(historia));
-    when(tareaRepository.findByCarpetaEspacioIdOrderByFechaAsignacionDescIdDesc(5L)).thenReturn(List.of());
+    when(tareaRepository.findAsignadasHastaHoy(5L, LocalDate.of(2026, 10, 19))).thenReturn(List.of());
 
     ActividadesMateriaDTO dto = servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 5L);
 
