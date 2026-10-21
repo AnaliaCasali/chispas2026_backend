@@ -13,9 +13,9 @@ import edu.ies63.chispas2026_backend.models.RespuestaId;
 @Repository
 public interface RespuestaRepository extends JpaRepository<Respuesta, RespuestaId> {
 
-List<Respuesta> findByTareaIdAndIntento(Long tareaId, Integer intento);
+List<Respuesta> findByTareaIdAndIdIntento(Long tareaId, Integer intento);
  
-List<Respuesta> findByTareaIdOrderByIntentoAscItemIdAsc(Long tareaId);
+List<Respuesta> findByTareaIdOrderByIdIntentoAscItemIdAsc(Long tareaId);
 
 @Query("SELECT COALESCE(MAX(r.id.intento), 0) FROM Respuesta r WHERE r.tarea.id = :tareaId")
 int maxIntentoPorTarea(@Param("tareaId") Long tareaId);

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import ch.qos.logback.core.util.Duration;
+
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemRespuestaDTO;
 import edu.ies63.chispas2026_backend.dtos.ResultadoTareaDTO;
@@ -31,7 +31,9 @@ import edu.ies63.chispas2026_backend.repositories.ActividadParRepository;
 import edu.ies63.chispas2026_backend.repositories.RespuestaRepository;
 import edu.ies63.chispas2026_backend.repositories.TareaRepository;
 import edu.ies63.chispas2026_backend.services.TareaService;
-import java.time.Clock; 
+import java.time.Clock;
+import java.time.Duration;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -84,6 +86,7 @@ public class TareaServiceImpl implements TareaService {
     Map<Long, ActividadImagen> itemsPorId = actividadImagenRepository.findByActividadId(actividad.getId())
         .stream()
         .collect(Collectors.toMap(ActividadImagen::getId, Function.identity()));
+        
 
     // los que el alumno debe responder: todos en ORDENAR
     Map<Long, ActividadImagen> respondiblesPorId = itemsPorId.values().stream()
