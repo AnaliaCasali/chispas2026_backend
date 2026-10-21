@@ -31,9 +31,14 @@ class TareaRepositoryTest {
 
   // inserta una tarea en la carpetaEspacio indicada y devuelve su id
   private long insertarTarea(long carpetaEspacioId, long actividadId, String fecha, String hora) {
+    return insertarTarea(carpetaEspacioId, actividadId, fecha, hora, "PENDIENTE");
+  }
+
+  // TSDS-6: igual que la anterior pero con el estado que se pida
+  private long insertarTarea(long carpetaEspacioId, long actividadId, String fecha, String hora, String estado) {
     jdbc.update("""
         INSERT INTO tarea (actividad_id, carpeta_espacio_id, asignada_por, fecha_asignacion, asignada_en, estado)
-        VALUES (?, ?, 1, ?, ?, 'PENDIENTE')""", actividadId, carpetaEspacioId, fecha, fecha + " " + hora);
+        VALUES (?, ?, 1, ?, ?, ?)""", actividadId, carpetaEspacioId, fecha, fecha + " " + hora, estado);
     return jdbc.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
   }
 
@@ -99,5 +104,47 @@ class TareaRepositoryTest {
     assertThat(Hibernate.isInitialized(tarea.getActividad().getContenido())).isTrue();
     assertThat(tarea.getActividad().getPlantilla().getCodigo().name()).isEqualTo("UNIR_FLECHAS");
     assertThat(tarea.getAsignadaEn()).isEqualTo("2026-10-19T09:00:00");
+  }
+
+  // ---- TSDS-6: findPendientesHastaHoy (toda la carpeta 2 de Mariel) ----
+
+  private static final long CARPETA_MARIEL = 2L;
+  private static final long TAREA_PENDIENTE_DE_LENGUA = 2L; // dato de ejemplo (la 1 esta FINALIZADA)
+
+  // trae PENDIENTE y EN_CURSO de todas sus materias, deja afuera FINALIZADA
+  @Test
+  void pendientes_incluyeEnCursoYExcluyeFinalizadas() {
+    long pendiente = insertarTarea(MATEMATICA_MARIEL, 1, "2026-10-19", "09:00:00", "PENDIENTE");
+    long enCurso = insertarTarea(MATEMATICA_MARIEL, 2, "2026-10-18", "09:00:00", "EN_CURSO");
+    insertarTarea(MATEMATICA_MARIEL, 3, "2026-10-17", "09:00:00", "FINALIZADA");
+
+    List<Tarea> tareas = tareaRepository.findPendientesHastaHoy(CARPETA_MARIEL, HOY);
+
+    assertThat(idsDe(tareas)).containsExactly(pendiente, enCurso, TAREA_PENDIENTE_DE_LENGUA);
+  }
+
+  // mismo orden que la TSDS-4: fecha, hora de asignacion y id
+  @Test
+  void pendientes_ordenaPorFechaYHoraDeAsignacion() {
+    long tarde = insertarTarea(MATEMATICA_MARIEL, 2, "2026-10-19", "11:00:00");
+    long temprano = insertarTarea(MATEMATICA_MARIEL, 1, "2026-10-19", "09:00:00");
+    long deHoy = insertarTarea(5L, 1, "2026-10-20", "08:00:00"); // Historia
+
+    List<Tarea> tareas = tareaRepository.findPendientesHastaHoy(CARPETA_MARIEL, HOY);
+
+    assertThat(idsDe(tareas)).containsExactly(deHoy, tarde, temprano, TAREA_PENDIENTE_DE_LENGUA);
+  }
+
+  // no trae las futuras ni las de otra carpeta (Tomas), y viene con lo necesario cargado
+  @Test
+  void pendientes_excluyeFuturasYOtrasCarpetas() {
+    insertarTarea(MATEMATICA_MARIEL, 1, "2026-10-21", "08:00:00");
+    insertarTarea(7L, 1, "2026-10-19", "09:00:00"); // Matematica de Tomas
+
+    List<Tarea> tareas = tareaRepository.findPendientesHastaHoy(CARPETA_MARIEL, HOY);
+
+    assertThat(idsDe(tareas)).containsExactly(TAREA_PENDIENTE_DE_LENGUA);
+    assertThat(Hibernate.isInitialized(tareas.get(0).getActividad().getPlantilla())).isTrue();
+    assertThat(Hibernate.isInitialized(tareas.get(0).getActividad().getContenido())).isTrue();
   }
 }
