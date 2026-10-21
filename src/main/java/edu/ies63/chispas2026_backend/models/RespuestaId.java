@@ -19,4 +19,7 @@ public class RespuestaId implements Serializable {
 
     @Column(name = "item_id")
     private Long itemId;
+
+    @Column(name = "intento")
+    private Integer intento;
 }
