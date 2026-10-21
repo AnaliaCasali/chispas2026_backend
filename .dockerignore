@@ -1,0 +1,9 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+# las variables llegan por docker-compose, nunca dentro de la imagen
+.env
+db/
