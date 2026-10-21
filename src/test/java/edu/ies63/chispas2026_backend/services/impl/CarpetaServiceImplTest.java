@@ -15,6 +15,7 @@ import edu.ies63.chispas2026_backend.repositories.CarpetaEspacioRepository;
 import edu.ies63.chispas2026_backend.repositories.CarpetaRepository;
 import edu.ies63.chispas2026_backend.repositories.HorarioRepository;
 import edu.ies63.chispas2026_backend.repositories.TareaRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -233,6 +234,27 @@ class CarpetaServiceImplTest {
     assertThatThrownBy(() -> servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(tomas, 3L))
         .isInstanceOf(AccesoDenegadoException.class)
         .hasMessage("No tienes permiso para ver esta carpeta");
+    verifyNoInteractions(tareaRepository);
+  }
+
+  // alumno sin carpeta en el ciclo lectivo activo: 404
+  @Test
+  void alumnoSinCarpetaEnElCicloActual_lanzaNoEncontrada() {
+    Usuario nuevo = Usuario.builder().id(9L).build();
+    when(carpetaRepository.findByEstudianteIdAndCicloLectivoActivoTrue(9L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> servicioA("2026-10-19T09:40").obtenerMiCarpeta(nuevo))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage("No tienes una carpeta para el ciclo lectivo actual");
+  }
+
+  @Test
+  void materiaInexistente_lanzaNoEncontrada() {
+    when(carpetaEspacioRepository.findConEspacioYCarpetaById(999L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> servicioA("2026-10-19T09:40").obtenerActividadesDeMateria(mariel, 999L))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage("La materia solicitada no existe");
     verifyNoInteractions(tareaRepository);
   }
 }
