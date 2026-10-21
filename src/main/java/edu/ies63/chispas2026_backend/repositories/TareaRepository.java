@@ -3,10 +3,12 @@ package edu.ies63.chispas2026_backend.repositories;
 import edu.ies63.chispas2026_backend.models.Tarea;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TareaRepository extends JpaRepository<Tarea, Long> {
@@ -25,6 +27,22 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
          ORDER BY t.fechaAsignacion DESC, t.asignadaEn DESC, t.id DESC
         """)
     List<Tarea> findAsignadasHastaHoy(Long carpetaEspacioId, LocalDate hoy);
+
+   
+   //para corregir la entrega de la tarea.
+    @Query("""
+        SELECT t FROM Tarea t
+          JOIN FETCH t.actividad a 
+          JOIN FETCH a.plantilla
+          LEFT JOIN FETCH t.carpetaEspacio ce 
+          LEFT JOIN FETCH ce.carpeta c 
+          LEFT JOIN FETCH c.estudiante e
+          LEFT JOIN FETCH e.usuario 
+          WHERE t.id = :tareaId
+        """)
+        Optional<Tarea> findCompletaById(@Param("tareaId") Long tareaId);
+    
+
 
     // TSDS-6: pendientes (todo lo que no esta FINALIZADA, EN_CURSO incluida) de todas las
     // materias de una carpeta, asignadas hasta hoy. Mismo orden que findAsignadasHastaHoy,
