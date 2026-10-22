@@ -359,12 +359,12 @@ INSERT INTO plantilla (id, codigo, nombre, destinatario, min_items, max_items) V
  (1,'ORDENAR','Ordenar la historia','Secuencia temporal',3,8),
  (2,'UNIR_FLECHAS','Relación con imágenes','Asociación objeto-acción',2,5);  -- pares
 
--- Catálogo de imágenes (URLs públicas)
+-- Catálogo de imágenes (URLs públicas): 4 imágenes del Quijote son Locales
 INSERT INTO imagen (id, origen, ubicacion, nombre, texto_alt, subida_por) VALUES
- ( 1,'EXTERNA','https://picsum.photos/seed/quijote-sale/400/300',   'quijote-sale',    'Don Quijote sale de su casa a caballo',1),
- ( 2,'EXTERNA','https://picsum.photos/seed/quijote-lee/400/300',    'quijote-lee',     'Don Quijote lee libros de caballería',1),
- ( 3,'EXTERNA','https://picsum.photos/seed/quijote-vuelve/400/300', 'quijote-vuelve',  'Don Quijote vuelve a su casa',1),
- ( 4,'EXTERNA','https://picsum.photos/seed/quijote-molinos/400/300','quijote-molinos', 'Don Quijote enfrenta a los molinos de viento',1),
+ ( 1,'LOCAL','/images/don-quijote-saliendo.webp',  'quijote-sale',    'Don Quijote sale de su casa a caballo',1),
+ ( 2,'LOCAL','/images/don-quijote-leyendo.webp',   'quijote-lee',     'Don Quijote lee libros de caballería',1),
+ ( 3,'LOCAL','/images/don-quijote-volviendo.webp', 'quijote-vuelve',  'Don Quijote vuelve a su casa',1),
+ ( 4,'LOCAL','/images/don-quijote-molino.webp',    'quijote-molinos', 'Don Quijote enfrenta a los molinos de viento',1),
  ( 5,'EXTERNA','https://picsum.photos/seed/bostezo/300/300',        'bostezo',         'Persona bostezando con sueño',1),
  ( 6,'EXTERNA','https://picsum.photos/seed/cama/300/300',           'cama',            'Cama en un dormitorio',1),
  ( 7,'EXTERNA','https://picsum.photos/seed/llave/300/300',          'llave',           'Llave antigua',1),

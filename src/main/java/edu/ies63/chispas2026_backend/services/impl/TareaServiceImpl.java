@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import edu.ies63.chispas2026_backend.dtos.ContenidoTareaDTO;
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
+import edu.ies63.chispas2026_backend.dtos.HistorialTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.IntentoResumenDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemActividadDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemRespuestaDTO;
 import edu.ies63.chispas2026_backend.dtos.MateriaTareaDTO;
@@ -280,6 +283,58 @@ public class TareaServiceImpl implements TareaService {
         acertoTodo ? "Realizada" : "Pendiente",
         !acertoTodo
     );
+  }
+
+
+  @Override
+  @Transactional 
+  public HistorialTareaDTO historial(Usuario estudiante, Long tareaId) {
+    
+    //tarea del alumno existe
+    Tarea tarea = tareaRepository.findCompletaById(tareaId)
+        .orElseThrow(() -> new EntityNotFoundException("La tarea solicitada no existe"));
+    validarDuenio(tarea, estudiante);
+
+    //trae respuestas de todos los intentos
+    List<Respuesta> respuestas =
+        respuestaRepository.findByTareaIdOrderByIdIntentoAscItemIdAsc(tareaId);
+
+    //caso si nunca entregó
+    if(respuestas.isEmpty()) {
+      return new HistorialTareaDTO(tarea.getId(), "Pendiente", null, 0, 0 , List.of());
+    }  
+
+    //intentos agrupados en orden
+    TreeMap<Integer, List<Respuesta>> porIntento = respuestas.stream()
+        .collect(Collectors.groupingBy(
+          r -> r.getId().getIntento(),
+          TreeMap::new ,
+          Collectors.toList()));
+
+    //resumen de cada intento
+    List<IntentoResumenDTO> intentos = porIntento.entrySet().stream()
+        .map(e -> new IntentoResumenDTO(
+          e.getKey(),
+          (int) e.getValue().stream().filter(Respuesta::isEsCorrecta).count(),
+          e.getValue().size()))
+        .toList();
+
+    //último intento y su resultado
+    Map.Entry<Integer, List<Respuesta>> ultimo = porIntento.lastEntry();
+    int aciertosUltimo = (int) ultimo.getValue().stream()
+          .filter(Respuesta::isEsCorrecta).count();
+    int totalUltimo = ultimo.getValue().size();
+    ResultadoTareaDTO ultimoResultado = resultado(tarea, aciertosUltimo, totalUltimo);
+
+    
+    return new HistorialTareaDTO(
+      tarea.getId(),
+      ultimoResultado.estado(),
+      ultimoResultado,
+      ultimo.getKey(),
+      porIntento.size(),
+      intentos);
+
   }
 
 

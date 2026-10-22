@@ -39,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TareaControllerTest {
 
   private static final String URL_ENTREGA = "/api/v1/tareas/{id}/entrega";
+  private static final String URL_RESULTADO = "/api/v1/tareas/{id}/resultado";
   private static final String URL_DETALLE = "/api/v1/tareas/{id}";
   private static final String MARIEL = "45123456";
   private static final String TOMAS = "45654321";
@@ -260,6 +261,80 @@ class TareaControllerTest {
         .andExpect(jsonPath("$.message").value("Cada ítem de la actividad se responde una sola vez"));
   }
 
+  // ---------- historial ----------
+
+  // tarea recien asignada, sin entregas: 0 intentos y sin ultimo resultado
+  @Test
+  void resultadoSinEntregas_devuelveCeroIntentos() throws Exception {
+    long tareaId = insertarTarea(ACTIVIDAD_UNIR, LENGUA_MARIEL);
+
+    mockMvc.perform(get(URL_RESULTADO, tareaId).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tareaId").value(tareaId))
+        .andExpect(jsonPath("$.cantidadIntentos").value(0))
+        .andExpect(jsonPath("$.intentoActual").value(0))
+        .andExpect(jsonPath("$.ultimoResultado").doesNotExist())  // en el JSON viaja null
+        .andExpect(jsonPath("$.intentos").isEmpty());
+  }
+
+  // dos entregas: el ultimo resultado y el contador de intentos
+  @Test
+  void resultadoDespuesDeDosEntregas_devuelveElUltimoYElContador() throws Exception {
+    long tareaId = insertarTarea(ACTIVIDAD_UNIR, LENGUA_MARIEL);
+    String bearer = bearer(MARIEL);
+
+    // intento 1: una union cruzada (queda en curso, puede reintentar)
+    mockMvc.perform(post(URL_ENTREGA, tareaId).header("Authorization", bearer)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(bodyDeEntrega(1)))
+        .andExpect(status().isOk());
+
+    // intento 2: todo bien (finaliza)
+    mockMvc.perform(post(URL_ENTREGA, tareaId).header("Authorization", bearer)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(bodyDeEntrega(0)))
+        .andExpect(status().isOk());
+
+    mockMvc.perform(get(URL_RESULTADO, tareaId).header("Authorization", bearer))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tareaId").value(tareaId))
+        .andExpect(jsonPath("$.cantidadIntentos").value(2))
+        .andExpect(jsonPath("$.intentoActual").value(2))
+        .andExpect(jsonPath("$.ultimoResultado.aciertos").value(totalDeLaActividad()))
+        .andExpect(jsonPath("$.ultimoResultado.totalItems").value(totalDeLaActividad()))
+        .andExpect(jsonPath("$.ultimoResultado.mensaje")
+            .value("¡Felicitaciones respondiste todo correctamente!"))
+        .andExpect(jsonPath("$.ultimoResultado.puedeIntentar").value(false))
+        .andExpect(jsonPath("$.intentos[0].intento").value(1))
+        .andExpect(jsonPath("$.intentos[0].aciertos").value(totalDeLaActividad() - 1))
+        .andExpect(jsonPath("$.intentos[0].totalItems").value(totalDeLaActividad()))
+        .andExpect(jsonPath("$.intentos[1].intento").value(2))
+        .andExpect(jsonPath("$.intentos[1].aciertos").value(totalDeLaActividad()));
+
+    // en la base quedaron los 2 intentos guardados (el historial no se pisa)
+    entityManager.flush();
+    assertEquals(2, jdbc.queryForObject(
+        "SELECT COUNT(DISTINCT intento) FROM respuesta WHERE tarea_id = ?", Integer.class, tareaId));
+  }
+
+  // tarea de la carpeta de Tomas con el token de Mariel: 403
+  @Test
+  void resultadoDeOtroAlumno_da403() throws Exception {
+    long tareaId = insertarTarea(ACTIVIDAD_UNIR, MATERIA_TOMAS);
+
+    mockMvc.perform(get(URL_RESULTADO, tareaId).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.message").value("No tienes permiso para responder esta tarea"));
+  }
+
+  // tarea que no existe: 404
+  @Test
+  void resultadoTareaInexistente_da404() throws Exception {
+    mockMvc.perform(get(URL_RESULTADO, 999).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("La tarea solicitada no existe"));
+  }
+
   // ---------- detalle para abrir la tarea ----------
 
   // tarea 2 de ejemplo: UNIR_FLECHAS (actividad 3) en Lengua de Mariel, contenido Don Quijote
@@ -309,6 +384,14 @@ class TareaControllerTest {
     mockMvc.perform(get(URL_DETALLE, 999999).header("Authorization", bearer(MARIEL)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.message").value("La tarea solicitada no existe"));
+  }
+
+  // sin token: 401 con el mensaje del entry point de SecurityConfig
+  @Test
+  void resultadoSinToken_da401() throws Exception {
+    mockMvc.perform(get(URL_RESULTADO, 1))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.message").value("Debes iniciar sesión"));
   }
 
   // asignada para mañana: no esta en la lista todavia, asi que tampoco se abre
