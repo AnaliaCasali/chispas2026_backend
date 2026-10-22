@@ -41,7 +41,21 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
           WHERE t.id = :tareaId
         """)
         Optional<Tarea> findCompletaById(@Param("tareaId") Long tareaId);
-    
+
+    // para abrir la tarea: actividad con plantilla y contenido, y la materia con su carpeta
+    // (para el banner y para validar que sea del alumno logueado)
+    @Query("""
+        SELECT t FROM Tarea t
+          JOIN FETCH t.actividad a
+          JOIN FETCH a.plantilla
+          JOIN FETCH a.contenido
+          JOIN FETCH t.carpetaEspacio ce
+          JOIN FETCH ce.espacioCurricular
+          JOIN FETCH ce.carpeta
+         WHERE t.id = :tareaId
+        """)
+    Optional<Tarea> findDetalleById(Long tareaId);
+
 
 
     // TSDS-6: pendientes (todo lo que no esta FINALIZADA, EN_CURSO incluida) de todas las
