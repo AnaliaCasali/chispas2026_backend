@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.services.impl;
 
+import edu.ies63.chispas2026_backend.dtos.CapacidadEstudianteDTO;
 import edu.ies63.chispas2026_backend.dtos.EstudianteResumenDTO;
 import edu.ies63.chispas2026_backend.dtos.PerfilEstudianteDTO;
 import edu.ies63.chispas2026_backend.enums.Role;
@@ -10,6 +11,7 @@ import edu.ies63.chispas2026_backend.models.Curso;
 import edu.ies63.chispas2026_backend.models.Estudiante;
 import edu.ies63.chispas2026_backend.models.Usuario;
 import edu.ies63.chispas2026_backend.repositories.CarpetaRepository;
+import edu.ies63.chispas2026_backend.repositories.EstudianteCapacidadRepository;
 import edu.ies63.chispas2026_backend.repositories.EstudianteRepository;
 import edu.ies63.chispas2026_backend.services.EstudianteService;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,10 +30,13 @@ public class EstudianteServiceImpl implements EstudianteService {
 
   private final EstudianteRepository estudianteRepository;
   private final CarpetaRepository carpetaRepository;
+  private final EstudianteCapacidadRepository estudianteCapacidadRepository;
 
-  public EstudianteServiceImpl(EstudianteRepository estudianteRepository, CarpetaRepository carpetaRepository) {
+  public EstudianteServiceImpl(EstudianteRepository estudianteRepository, CarpetaRepository carpetaRepository,
+                               EstudianteCapacidadRepository estudianteCapacidadRepository) {
     this.estudianteRepository = estudianteRepository;
     this.carpetaRepository = carpetaRepository;
+    this.estudianteCapacidadRepository = estudianteCapacidadRepository;
   }
 
   @Override
@@ -58,6 +63,14 @@ public class EstudianteServiceImpl implements EstudianteService {
         .sorted()
         .toList();
 
+    // vienen ordenadas por area y despues por el orden de la pregunta
+    List<CapacidadEstudianteDTO> capacidades = estudianteCapacidadRepository.findDelEstudiante(estudianteId).stream()
+        .map(ec -> new CapacidadEstudianteDTO(
+            ec.getCapacidad().getArea(),
+            ec.getCapacidad().getPregunta(),
+            ec.isRespuesta()))
+        .toList();
+
     Usuario datos = estudiante.getUsuario();
     return new PerfilEstudianteDTO(
         estudiante.getId(),
@@ -66,7 +79,9 @@ public class EstudianteServiceImpl implements EstudianteService {
         datos.getFotoUrl(),
         curso,
         condiciones,
-        condiciones.isEmpty() ? MSG_SIN_CONDICION : null
+        condiciones.isEmpty() ? MSG_SIN_CONDICION : null,
+        estudiante.getObservaciones(),
+        capacidades
     );
   }
 

@@ -1,11 +1,13 @@
 package edu.ies63.chispas2026_backend.services.impl;
 
+import edu.ies63.chispas2026_backend.dtos.CapacidadEstudianteDTO;
 import edu.ies63.chispas2026_backend.dtos.EstudianteResumenDTO;
 import edu.ies63.chispas2026_backend.dtos.PerfilEstudianteDTO;
 import edu.ies63.chispas2026_backend.enums.Role;
 import edu.ies63.chispas2026_backend.exceptions.AccesoDenegadoException;
 import edu.ies63.chispas2026_backend.models.*;
 import edu.ies63.chispas2026_backend.repositories.CarpetaRepository;
+import edu.ies63.chispas2026_backend.repositories.EstudianteCapacidadRepository;
 import edu.ies63.chispas2026_backend.repositories.EstudianteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +27,9 @@ class EstudianteServiceImplTest {
 
   private final EstudianteRepository estudianteRepository = mock(EstudianteRepository.class);
   private final CarpetaRepository carpetaRepository = mock(CarpetaRepository.class);
-  private final EstudianteServiceImpl service = new EstudianteServiceImpl(estudianteRepository, carpetaRepository);
+  private final EstudianteCapacidadRepository estudianteCapacidadRepository = mock(EstudianteCapacidadRepository.class);
+  private final EstudianteServiceImpl service =
+      new EstudianteServiceImpl(estudianteRepository, carpetaRepository, estudianteCapacidadRepository);
 
   private final Usuario laura = Usuario.builder().id(1L).nombre("Laura").role(Role.DOCENTE).build();
   private final Usuario usuarioMariel = Usuario.builder().id(2L).nombre("Mariel").apellido("Linera")
@@ -146,6 +150,37 @@ class EstudianteServiceImplTest {
     cuartoA.setDivision(null);
 
     assertThat(service.obtenerPerfil(usuarioMariel, 2L).curso()).isEqualTo("4to Año");
+  }
+
+  // ---------- observaciones y capacidades ----------
+
+  @Test
+  void perfil_incluyeObservacionesYCapacidades() {
+    mariel.setObservaciones("Necesita consignas cortas.");
+    Capacidad reconoce = Capacidad.builder().id(1L).area("Lectura").pregunta("¿Reconoce las letras?").build();
+    Capacidad lee = Capacidad.builder().id(2L).area("Lectura").pregunta("¿Lee palabras simples?").orden(2).build();
+    when(estudianteCapacidadRepository.findDelEstudiante(2L)).thenReturn(List.of(
+        EstudianteCapacidad.builder().estudiante(mariel).capacidad(reconoce).respuesta(true).build(),
+        EstudianteCapacidad.builder().estudiante(mariel).capacidad(lee).respuesta(false).build()
+    ));
+
+    PerfilEstudianteDTO perfil = service.obtenerPerfil(laura, 2L);
+
+    assertThat(perfil.observaciones()).isEqualTo("Necesita consignas cortas.");
+    assertThat(perfil.capacidades()).containsExactly(
+        new CapacidadEstudianteDTO("Lectura", "¿Reconoce las letras?", true),
+        new CapacidadEstudianteDTO("Lectura", "¿Lee palabras simples?", false));
+  }
+
+  // sin capacidades respondidas va lista vacia, no null
+  @Test
+  void sinCapacidades_listaVacia() {
+    when(estudianteCapacidadRepository.findDelEstudiante(2L)).thenReturn(List.of());
+
+    PerfilEstudianteDTO perfil = service.obtenerPerfil(laura, 2L);
+
+    assertThat(perfil.capacidades()).isNotNull().isEmpty();
+    assertThat(perfil.observaciones()).isNull();
   }
 
   // ---------- lista del docente ----------
