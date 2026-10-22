@@ -2,7 +2,12 @@ package edu.ies63.chispas2026_backend.services.impl;
 
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemRespuestaDTO;
+import edu.ies63.chispas2026_backend.dtos.ContenidoTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.ItemActividadDTO;
+import edu.ies63.chispas2026_backend.dtos.MateriaTareaDTO;
 import edu.ies63.chispas2026_backend.dtos.ResultadoTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.TareaDetalleDTO;
+import edu.ies63.chispas2026_backend.dtos.TipoActividadDTO;
 import edu.ies63.chispas2026_backend.enums.CodigoPlantilla;
 import edu.ies63.chispas2026_backend.enums.EstadoTarea;
 import edu.ies63.chispas2026_backend.enums.LadoItem;
@@ -366,5 +371,118 @@ class TareaServiceImplTest {
         .isInstanceOf(RespuestaInvalidaException.class)
         .hasMessage("Cada ítem debe unirse con uno de la columna derecha");
     verify(respuestaRepository, never()).saveAll(any());
+  }
+
+  // ---------- detalle para abrir la tarea ----------
+
+  // item con imagen completa (url y texto alternativo), como los que muestra el detalle
+  private ActividadImagen itemConImagen(long id, int nroOrden, LadoItem lado) {
+    return ActividadImagen.builder().id(id).nroOrden(nroOrden).lado(lado).titulo("Ítem " + id)
+        .imagen(Imagen.builder().id(id).ubicacion("https://img/" + id + ".jpg").textoAlt("Alt " + id).build())
+        .build();
+  }
+
+  // materia y contenido completos para el banner y la pantalla Clase seleccionada
+  private void completarMateriaYContenido(Tarea tarea) {
+    EspacioCurricular espacio = tarea.getCarpetaEspacio().getEspacioCurricular();
+    espacio.setColor("#4F7BE8");
+    espacio.setIcono("libro.svg");
+    tarea.getActividad().setContenido(Contenido.builder().id(1L).tema("Literatura Española")
+        .texto("Don Quijote de la Mancha").portadaUrl("https://img/portada.jpg")
+        .audioUrl("https://audio/quijote.mp3").build());
+  }
+
+  @Test
+  void detalle_traeMateriaContenidoYActividad() {
+    completarMateriaYContenido(tareaUnir);
+    when(tareaRepository.findDetalleById(10L)).thenReturn(Optional.of(tareaUnir));
+    when(actividadImagenRepository.findConImagenByActividadId(21L)).thenReturn(List.of(
+        itemConImagen(201L, 1, LadoItem.IZQ), itemConImagen(301L, 1, LadoItem.DER)));
+
+    TareaDetalleDTO dto = servicio.obtenerDetalle(mariel, 10L);
+
+    assertThat(dto.tareaId()).isEqualTo(10L);
+    assertThat(dto.estado()).isEqualTo("Pendiente");
+    assertThat(dto.realizada()).isFalse();
+    assertThat(dto.materia()).isEqualTo(new MateriaTareaDTO(3L, "Lengua y Literatura", "#4F7BE8", "libro.svg"));
+    assertThat(dto.contenido()).isEqualTo(new ContenidoTareaDTO("Literatura Española",
+        "Don Quijote de la Mancha", "https://img/portada.jpg", "https://audio/quijote.mp3"));
+    assertThat(dto.actividadId()).isEqualTo(21L);
+    assertThat(dto.titulo()).isEqualTo("Una actividad");
+    assertThat(dto.consigna()).isEqualTo("Hacela");
+    assertThat(dto.tipoActividad()).isEqualTo(new TipoActividadDTO(CodigoPlantilla.UNIR_FLECHAS, "Relación con imágenes"));
+    // la imagen va con su texto alternativo para el lector de pantalla
+    assertThat(dto.items().get(0)).isEqualTo(
+        new ItemActividadDTO(201L, "https://img/201.jpg", "Alt 201", "Ítem 201", LadoItem.IZQ, 1));
+  }
+
+  // ORDENAR: no se manda la posicion (es la respuesta) y llegan todos los items
+  @Test
+  void detalleOrdenar_noRevelaLaPosicionCorrecta() {
+    when(tareaRepository.findDetalleById(9L)).thenReturn(Optional.of(tareaOrdenar));
+    when(actividadImagenRepository.findConImagenByActividadId(20L)).thenReturn(List.of(
+        itemConImagen(101L, 1, LadoItem.UNICA), itemConImagen(102L, 2, LadoItem.UNICA),
+        itemConImagen(103L, 3, LadoItem.UNICA), itemConImagen(104L, 4, LadoItem.UNICA)));
+
+    TareaDetalleDTO dto = servicio.obtenerDetalle(mariel, 9L);
+
+    assertThat(dto.items()).extracting(ItemActividadDTO::itemId).containsExactlyInAnyOrder(101L, 102L, 103L, 104L);
+    assertThat(dto.items()).extracting(ItemActividadDTO::posicion).containsOnlyNulls();
+  }
+
+  // UNIR_FLECHAS: primero la columna izquierda y despues la derecha, cada una por su posicion
+  @Test
+  void detalleUnir_ordenaPorColumnaYPosicion() {
+    when(tareaRepository.findDetalleById(10L)).thenReturn(Optional.of(tareaUnir));
+    when(actividadImagenRepository.findConImagenByActividadId(21L)).thenReturn(List.of(
+        itemConImagen(302L, 2, LadoItem.DER), itemConImagen(202L, 2, LadoItem.IZQ),
+        itemConImagen(301L, 1, LadoItem.DER), itemConImagen(201L, 1, LadoItem.IZQ)));
+
+    TareaDetalleDTO dto = servicio.obtenerDetalle(mariel, 10L);
+
+    assertThat(dto.items()).extracting(ItemActividadDTO::itemId).containsExactly(201L, 202L, 301L, 302L);
+    assertThat(dto.items()).extracting(ItemActividadDTO::posicion).containsExactly(1, 2, 1, 2);
+  }
+
+  @Test
+  void detalleDeTareaFinalizada_seMuestraRealizada() {
+    tareaOrdenar.setEstado(EstadoTarea.FINALIZADA);
+    when(tareaRepository.findDetalleById(9L)).thenReturn(Optional.of(tareaOrdenar));
+    when(actividadImagenRepository.findConImagenByActividadId(20L)).thenReturn(List.of());
+
+    TareaDetalleDTO dto = servicio.obtenerDetalle(mariel, 9L);
+
+    assertThat(dto.estado()).isEqualTo("Realizada");
+    assertThat(dto.realizada()).isTrue();
+  }
+
+  @Test
+  void detalleDeTareaDeOtroAlumno_esAccesoDenegado() {
+    when(tareaRepository.findDetalleById(9L)).thenReturn(Optional.of(tareaOrdenar));
+    Usuario tomas = Usuario.builder().id(3L).build();
+
+    assertThatThrownBy(() -> servicio.obtenerDetalle(tomas, 9L))
+        .isInstanceOf(AccesoDenegadoException.class)
+        .hasMessage("No tienes permiso para ver esta tarea");
+  }
+
+  @Test
+  void detalleDeTareaInexistente_esNoEncontrada() {
+    when(tareaRepository.findDetalleById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> servicio.obtenerDetalle(mariel, 99L))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage("La tarea solicitada no existe");
+  }
+
+  // asignada para mañana: todavia no aparece en la lista, asi que tampoco se puede abrir
+  @Test
+  void detalleDeTareaConFechaFutura_esNoEncontrada() {
+    tareaOrdenar.setFechaAsignacion(AHORA.toLocalDate().plusDays(1));
+    when(tareaRepository.findDetalleById(9L)).thenReturn(Optional.of(tareaOrdenar));
+
+    assertThatThrownBy(() -> servicio.obtenerDetalle(mariel, 9L))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage("La tarea solicitada no existe");
   }
 }

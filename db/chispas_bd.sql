@@ -302,10 +302,23 @@ INSERT INTO carpeta_espacio (id, carpeta_id, espacio_curricular_id, orden) VALUE
  (3,2,1,1), (4,2,2,2), (5,2,3,3),      -- 2026: Lengua, Matemática, Historia
  (6,3,1,1), (7,3,2,2);
 
+-- horario semanal de 4to A: Lengua la da Laura (docente 1), las otras no tienen docente cargado
 INSERT INTO horario (curso_id, espacio_curricular_id, docente_id, dia, hora_inicio, hora_fin) VALUES
  (1,1,1,'LUNES','08:45','09:30'),
  (1,2,NULL,'LUNES','09:30','10:15'),
- (1,3,NULL,'LUNES','10:15','11:00');
+ (1,3,NULL,'LUNES','10:15','11:00'),
+ (1,2,NULL,'MARTES','08:45','09:30'),
+ (1,3,NULL,'MARTES','09:30','10:15'),
+ (1,1,1,'MARTES','10:15','11:00'),
+ (1,3,NULL,'MIERCOLES','08:45','09:30'),
+ (1,1,1,'MIERCOLES','09:30','10:15'),
+ (1,2,NULL,'MIERCOLES','10:15','11:00'),
+ (1,1,1,'JUEVES','08:45','09:30'),
+ (1,3,NULL,'JUEVES','09:30','10:15'),
+ (1,2,NULL,'JUEVES','10:15','11:00'),
+ (1,2,NULL,'VIERNES','08:45','09:30'),
+ (1,1,1,'VIERNES','09:30','10:15'),
+ (1,3,NULL,'VIERNES','10:15','11:00');
 
 -- Perfil del estudiante: Mariel tiene 2 condiciones, Tomás ninguna (los dos son alumnos de Laura).
 -- Pablo (docente 4) da Lengua en 5to Año B, donde está Lucía (alumna 5, 1 condición): Laura no la tiene asignada.
@@ -328,7 +341,11 @@ INSERT INTO carpeta_espacio (id, carpeta_id, espacio_curricular_id, orden) VALUE
  (8,4,1,1);
 
 INSERT INTO horario (curso_id, espacio_curricular_id, docente_id, dia, hora_inicio, hora_fin) VALUES
- (3,1,4,'LUNES','08:45','09:30');
+ (3,1,4,'LUNES','08:45','09:30'),
+ (3,1,4,'MARTES','08:45','09:30'),
+ (3,1,4,'MIERCOLES','08:45','09:30'),
+ (3,1,4,'JUEVES','08:45','09:30'),
+ (3,1,4,'VIERNES','08:45','09:30');
 
 INSERT INTO estudiante_condicion (estudiante_id, condicion_id) VALUES
  (2,1), (2,2),

@@ -2,9 +2,12 @@ package edu.ies63.chispas2026_backend.services;
 
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
 import edu.ies63.chispas2026_backend.dtos.ResultadoTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.TareaDetalleDTO;
 import edu.ies63.chispas2026_backend.models.Usuario;
 
 public interface TareaService {
+    TareaDetalleDTO obtenerDetalle(Usuario estudiante, Long tareaId);
+
     ResultadoTareaDTO entregar(Usuario estudiante, Long tareaId, EntregaRequestDTO entrega);
 
 }
