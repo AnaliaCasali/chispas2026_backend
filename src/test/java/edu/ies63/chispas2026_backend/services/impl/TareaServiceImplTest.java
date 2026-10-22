@@ -1,6 +1,8 @@
 package edu.ies63.chispas2026_backend.services.impl;
 
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
+import edu.ies63.chispas2026_backend.dtos.HistorialTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.IntentoResumenDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemRespuestaDTO;
 import edu.ies63.chispas2026_backend.dtos.ResultadoTareaDTO;
 import edu.ies63.chispas2026_backend.enums.CodigoPlantilla;
@@ -24,11 +26,14 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.*;
 
 // TSDS-13: corrige por aciertos, guarda el intento sin borrar nada y elige el mensaje del resultado
@@ -132,6 +137,40 @@ class TareaServiceImplTest {
     ArgumentCaptor<List<Respuesta>> captor = ArgumentCaptor.forClass(List.class);
     verify(respuestaRepository).saveAll(captor.capture());
     return captor.getValue();
+  }
+
+  // ---------- helpers del historial ----------
+
+  // una respuesta del intento indicado, con el resultado que se le pase
+  private Respuesta respuesta(Long itemId, int intento, boolean correcta) {
+    return Respuesta.builder()
+        .id(new RespuestaId(9L, itemId, intento))
+        .esCorrecta(correcta)
+        .build();
+  }
+
+  // un intento completo de la tarea 9 (4 items): los primeros "aciertos" van correctos
+  private List<Respuesta> intento(int numero, int aciertos) {
+    List<Respuesta> respuestas = new ArrayList<>();
+    for (int i = 1; i <= 4; i++) {
+      respuestas.add(respuesta(100L + i, numero, i <= aciertos));
+    }
+    return respuestas;
+  }
+
+  // todos los intentos juntos: historial(2, 4) = intento 1 con 2 aciertos y intento 2 con 4
+  private List<Respuesta> historial(int... aciertosPorIntento) {
+    List<Respuesta> todas = new ArrayList<>();
+    for (int i = 0; i < aciertosPorIntento.length; i++) {
+      todas.addAll(intento(i + 1, aciertosPorIntento[i]));
+    }
+    return todas;
+  }
+
+  // dadoOrdenar() ya mockea la tarea 9 y su duena; aca se agrega lo guardado en respuesta
+  private void dadoHistorial(List<Respuesta> respuestas) {
+    dadoOrdenar();
+    when(respuestaRepository.findByTareaIdOrderByIdIntentoAscItemIdAsc(9L)).thenReturn(respuestas);
   }
 
   // ---------- ORDENAR ----------
@@ -366,5 +405,106 @@ class TareaServiceImplTest {
         .isInstanceOf(RespuestaInvalidaException.class)
         .hasMessage("Cada ítem debe unirse con uno de la columna derecha");
     verify(respuestaRepository, never()).saveAll(any());
+  }
+
+  // ---------- historial ----------
+
+  // nunca entrego: cero intentos y sin ultimo resultado
+  @Test
+  void historial_sinEntregas_devuelveCeroIntentos() {
+    dadoHistorial(List.of());
+
+    HistorialTareaDTO historial = servicio.historial(mariel, 9L);
+
+    assertThat(historial.tareaId()).isEqualTo(9L);
+    assertThat(historial.cantidadIntentos()).isZero();
+    assertThat(historial.intentoActual()).isZero();
+    assertThat(historial.ultimoResultado()).isNull();
+    assertThat(historial.intentos()).isEmpty();
+  }
+
+  // dos intentos: se muestra el ultimo (4/4) y el contador es 2
+  @Test
+  void historial_dosIntentos_devuelveElUltimoYElResumen() {
+    dadoHistorial(historial(2, 4));
+
+    HistorialTareaDTO historial = servicio.historial(mariel, 9L);
+
+    assertThat(historial.cantidadIntentos()).isEqualTo(2);
+    assertThat(historial.intentoActual()).isEqualTo(2);
+    assertThat(historial.ultimoResultado().aciertos()).isEqualTo(4);
+    assertThat(historial.ultimoResultado().totalItems()).isEqualTo(4);
+    assertThat(historial.ultimoResultado().mensaje()).isEqualTo(TareaServiceImpl.MSG_TODO_BIEN);
+    assertThat(historial.ultimoResultado().estado()).isEqualTo("Realizada");
+    assertThat(historial.ultimoResultado().puedeIntentar()).isFalse();
+    assertThat(historial.intentos())
+        .extracting(IntentoResumenDTO::intento, IntentoResumenDTO::aciertos, IntentoResumenDTO::totalItems)
+        .containsExactly(tuple(1, 2, 4), tuple(2, 4, 4));
+  }
+
+  // el ultimo intento quedo a medias: sigue pendiente y puede reintentar
+  @Test
+  void historial_ultimoIntentoAMedias_siguePendiente() {
+    dadoHistorial(historial(1, 3));
+
+    HistorialTareaDTO historial = servicio.historial(mariel, 9L);
+
+    assertThat(historial.cantidadIntentos()).isEqualTo(2);
+    assertThat(historial.intentoActual()).isEqualTo(2);
+    assertThat(historial.ultimoResultado().aciertos()).isEqualTo(3);
+    assertThat(historial.ultimoResultado().mensaje()).isEqualTo(TareaServiceImpl.MSG_MUY_CERCA);
+    assertThat(historial.ultimoResultado().estado()).isEqualTo("Pendiente");
+    assertThat(historial.ultimoResultado().puedeIntentar()).isTrue();
+  }
+
+  // un solo intento: el contador es 1 y el historial tiene una sola fila
+  @Test
+  void historial_unSoloIntento() {
+    dadoHistorial(historial(2));
+
+    HistorialTareaDTO historial = servicio.historial(mariel, 9L);
+
+    assertThat(historial.cantidadIntentos()).isEqualTo(1);
+    assertThat(historial.intentoActual()).isEqualTo(1);
+    assertThat(historial.intentos())
+        .extracting(IntentoResumenDTO::intento, IntentoResumenDTO::aciertos)
+        .containsExactly(tuple(1, 2));
+  }
+
+  // aunque las respuestas vengan mezcladas, los intentos se muestran en orden 1, 2...
+  @Test
+  void historial_respuestasDesordenadas_ordenaLosIntentos() {
+    List<Respuesta> mezcladas = new ArrayList<>(historial(2, 4));
+    Collections.reverse(mezcladas);
+    dadoHistorial(mezcladas);
+
+    HistorialTareaDTO historial = servicio.historial(mariel, 9L);
+
+    assertThat(historial.intentos())
+        .extracting(IntentoResumenDTO::intento)
+        .containsExactly(1, 2);
+  }
+
+  // tarea que no existe: excepcion sin tocar las respuestas
+  @Test
+  void historial_tareaInexistente_lanzaNoEncontrada() {
+    when(tareaRepository.findCompletaById(999L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> servicio.historial(mariel, 999L))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage("La tarea solicitada no existe");
+    verifyNoInteractions(respuestaRepository);
+  }
+
+  // tarea de otro alumno: acceso denegado sin tocar las respuestas
+  @Test
+  void historial_tareaDeOtroAlumno_accesoDenegado() {
+    dadoHistorial(historial(4));
+    Usuario tomas = Usuario.builder().id(3L).build();
+
+    assertThatThrownBy(() -> servicio.historial(tomas, 9L))
+        .isInstanceOf(AccesoDenegadoException.class)
+        .hasMessage(TareaServiceImpl.MSG_SIN_PERMISO);
+    verifyNoInteractions(respuestaRepository);
   }
 }
