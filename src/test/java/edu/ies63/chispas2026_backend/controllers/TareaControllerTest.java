@@ -11,11 +11,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,7 +40,9 @@ class TareaControllerTest {
 
   private static final String URL_ENTREGA = "/api/v1/tareas/{id}/entrega";
   private static final String URL_RESULTADO = "/api/v1/tareas/{id}/resultado";
+  private static final String URL_DETALLE = "/api/v1/tareas/{id}";
   private static final String MARIEL = "45123456";
+  private static final String TOMAS = "45654321";
   private static final long ACTIVIDAD_UNIR = 4L;   // UNIR_FLECHAS con items y pares de ejemplo
   private static final long LENGUA_MARIEL = 3L;
   private static final long MATERIA_TOMAS = 6L;
@@ -49,6 +57,9 @@ class TareaControllerTest {
   // al final, y el jdbc no ve los cambios pendientes del persistence context
   @Autowired
   private EntityManager entityManager;
+
+  @Autowired
+  private Clock clock;
 
   // hace login con el endpoint real y devuelve el header Authorization
   private String bearer(String usuario) throws Exception {
@@ -324,11 +335,80 @@ class TareaControllerTest {
         .andExpect(jsonPath("$.message").value("La tarea solicitada no existe"));
   }
 
+  // ---------- detalle para abrir la tarea ----------
+
+  // tarea 2 de ejemplo: UNIR_FLECHAS (actividad 3) en Lengua de Mariel, contenido Don Quijote
+  @Test
+  void detalle_traeTodoLoQueNecesitaLaPantallaDeLaActividad() throws Exception {
+    mockMvc.perform(get(URL_DETALLE, 2).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tareaId").value(2))
+        .andExpect(jsonPath("$.estado").value("Pendiente"))
+        .andExpect(jsonPath("$.realizada").value(false))
+        .andExpect(jsonPath("$.materia.carpetaEspacioId").value((int) LENGUA_MARIEL))
+        .andExpect(jsonPath("$.materia.nombre").value("Lengua y Literatura"))
+        .andExpect(jsonPath("$.contenido.tema").value("Literatura Española"))
+        .andExpect(jsonPath("$.contenido.texto").value("Don Quijote de la Mancha"))
+        .andExpect(jsonPath("$.titulo").value("Unir con flechas"))
+        .andExpect(jsonPath("$.consigna").value("Uní cada imagen con la que corresponde"))
+        .andExpect(jsonPath("$.tipoActividad.codigo").value("UNIR_FLECHAS"))
+        // izquierda primero y despues derecha, cada una por su posicion
+        .andExpect(jsonPath("$.items[*].titulo", contains("Sueño", "Llave", "Puerta", "Cama")))
+        .andExpect(jsonPath("$.items[*].lado", contains("IZQ", "IZQ", "DER", "DER")))
+        .andExpect(jsonPath("$.items[*].posicion", contains(1, 2, 1, 2)))
+        .andExpect(jsonPath("$.items[0].imagenUrl").value("https://picsum.photos/seed/bostezo/300/300"))
+        .andExpect(jsonPath("$.items[0].textoAlt").value("Persona bostezando con sueño"));
+  }
+
+  // tarea 1 de ejemplo: ORDENAR ya finalizada. No se manda la posicion porque es la respuesta
+  @Test
+  void detalleOrdenar_noRevelaLaPosicionYMuestraRealizada() throws Exception {
+    mockMvc.perform(get(URL_DETALLE, 1).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.estado").value("Realizada"))
+        .andExpect(jsonPath("$.tipoActividad.codigo").value("ORDENAR"))
+        .andExpect(jsonPath("$.items", hasSize(4)))
+        .andExpect(jsonPath("$.items[*].posicion", everyItem(nullValue())));
+  }
+
+  // la tarea 2 es de Mariel: Tomas no la puede abrir
+  @Test
+  void detalleDeTareaDeOtroAlumno_da403() throws Exception {
+    mockMvc.perform(get(URL_DETALLE, 2).header("Authorization", bearer(TOMAS)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.message").value("No tienes permiso para ver esta tarea"));
+  }
+
+  @Test
+  void detalleDeTareaInexistente_da404() throws Exception {
+    mockMvc.perform(get(URL_DETALLE, 999999).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("La tarea solicitada no existe"));
+  }
+
   // sin token: 401 con el mensaje del entry point de SecurityConfig
   @Test
   void resultadoSinToken_da401() throws Exception {
     mockMvc.perform(get(URL_RESULTADO, 1))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.message").value("Debes iniciar sesión"));
+  }
+
+  // asignada para mañana: no esta en la lista todavia, asi que tampoco se abre
+  @Test
+  void detalleDeTareaFutura_da404() throws Exception {
+    jdbc.update("""
+        INSERT INTO tarea (actividad_id, carpeta_espacio_id, asignada_por, fecha_asignacion, asignada_en, estado)
+        VALUES (?, ?, 1, ?, NOW(), 'PENDIENTE')""", ACTIVIDAD_UNIR, LENGUA_MARIEL, LocalDate.now(clock).plusDays(1));
+    long tareaId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+
+    mockMvc.perform(get(URL_DETALLE, tareaId).header("Authorization", bearer(MARIEL)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void detalleConDocente_da403() throws Exception {
+    mockMvc.perform(get(URL_DETALLE, 2).header("Authorization", bearer("docente@chispas.edu.ar")))
+        .andExpect(status().isForbidden());
   }
 }

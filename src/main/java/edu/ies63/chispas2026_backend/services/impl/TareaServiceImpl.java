@@ -1,7 +1,10 @@
 package edu.ies63.chispas2026_backend.services.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +16,16 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 
+import edu.ies63.chispas2026_backend.dtos.ContenidoTareaDTO;
 import edu.ies63.chispas2026_backend.dtos.EntregaRequestDTO;
 import edu.ies63.chispas2026_backend.dtos.HistorialTareaDTO;
 import edu.ies63.chispas2026_backend.dtos.IntentoResumenDTO;
+import edu.ies63.chispas2026_backend.dtos.ItemActividadDTO;
 import edu.ies63.chispas2026_backend.dtos.ItemRespuestaDTO;
+import edu.ies63.chispas2026_backend.dtos.MateriaTareaDTO;
 import edu.ies63.chispas2026_backend.dtos.ResultadoTareaDTO;
+import edu.ies63.chispas2026_backend.dtos.TareaDetalleDTO;
+import edu.ies63.chispas2026_backend.dtos.TipoActividadDTO;
 import edu.ies63.chispas2026_backend.enums.CodigoPlantilla;
 import edu.ies63.chispas2026_backend.enums.EstadoTarea;
 import edu.ies63.chispas2026_backend.enums.LadoItem;
@@ -26,6 +34,10 @@ import edu.ies63.chispas2026_backend.exceptions.RespuestaInvalidaException;
 import edu.ies63.chispas2026_backend.exceptions.TareaYaFinalizadaException;
 import edu.ies63.chispas2026_backend.models.Actividad;
 import edu.ies63.chispas2026_backend.models.ActividadImagen;
+import edu.ies63.chispas2026_backend.models.Contenido;
+import edu.ies63.chispas2026_backend.models.EspacioCurricular;
+import edu.ies63.chispas2026_backend.models.Imagen;
+import edu.ies63.chispas2026_backend.models.Plantilla;
 import edu.ies63.chispas2026_backend.models.Respuesta;
 import edu.ies63.chispas2026_backend.models.Tarea;
 import edu.ies63.chispas2026_backend.models.Usuario;
@@ -48,6 +60,8 @@ public class TareaServiceImpl implements TareaService {
   static final String MSG_BUEN_INTENTO = "¡Buen intento! Cada vez que practicás, aprendés algo nuevo. ¡Volvé a intentarlo!";
   static final String MSG_SIN_PERMISO = "No tienes permiso para responder esta tarea";
   static final String MSG_YA_FINALIZADA = "Ya respondiste correctamente esta actividad";
+  static final String MSG_NO_EXISTE = "La tarea solicitada no existe";
+  static final String MSG_SIN_PERMISO_VER = "No tienes permiso para ver esta tarea";
 
   private final TareaRepository tareaRepository;
   private final RespuestaRepository respuestaRepository;
@@ -70,10 +84,67 @@ public class TareaServiceImpl implements TareaService {
 
   @Override
   @Transactional
+  public TareaDetalleDTO obtenerDetalle(Usuario estudiante, Long tareaId) {
+    // una tarea con fecha futura todavia no esta asignada: igual que en la lista, para el alumno no existe
+    LocalDate hoy = LocalDate.now(clock);
+    Tarea tarea = tareaRepository.findDetalleById(tareaId)
+        .filter(t -> !t.getFechaAsignacion().isAfter(hoy))
+        .orElseThrow(() -> new EntityNotFoundException(MSG_NO_EXISTE));
+
+    // el id del estudiante es el mismo que el de su usuario
+    if (!tarea.getCarpetaEspacio().getCarpeta().getEstudiante().getId().equals(estudiante.getId())) {
+      throw new AccesoDenegadoException(MSG_SIN_PERMISO_VER);
+    }
+
+    Actividad actividad = tarea.getActividad();
+    Plantilla plantilla = actividad.getPlantilla();
+    boolean esUnirFlechas = plantilla.getCodigo() == CodigoPlantilla.UNIR_FLECHAS;
+
+    // ORDENAR: se mezclan, porque el orden de la base es la respuesta.
+    // UNIR_FLECHAS: primero la columna izquierda y despues la derecha, cada una en su orden
+    List<ActividadImagen> items = new ArrayList<>(actividadImagenRepository.findConImagenByActividadId(actividad.getId()));
+    if (esUnirFlechas) {
+      items.sort(Comparator.comparing(ActividadImagen::getLado).thenComparing(ActividadImagen::getNroOrden));
+    } else {
+      Collections.shuffle(items);
+    }
+
+    EspacioCurricular espacio = tarea.getCarpetaEspacio().getEspacioCurricular();
+    Contenido contenido = actividad.getContenido();
+    boolean realizada = tarea.getEstado() == EstadoTarea.FINALIZADA;
+    return new TareaDetalleDTO(
+        tarea.getId(),
+        realizada ? "Realizada" : "Pendiente",
+        realizada,
+        new MateriaTareaDTO(tarea.getCarpetaEspacio().getId(), espacio.getNombre(), espacio.getColor(), espacio.getIcono()),
+        new ContenidoTareaDTO(contenido.getTema(), contenido.getTexto(), contenido.getPortadaUrl(), contenido.getAudioUrl()),
+        actividad.getId(),
+        actividad.getTitulo(),
+        actividad.getConsigna(),
+        new TipoActividadDTO(plantilla.getCodigo(), plantilla.getNombre()),
+        items.stream().map(item -> toItemDTO(item, esUnirFlechas)).toList()
+    );
+  }
+
+  // en ORDENAR no se manda el nroOrden porque es la posicion correcta
+  private ItemActividadDTO toItemDTO(ActividadImagen item, boolean esUnirFlechas) {
+    Imagen imagen = item.getImagen();
+    return new ItemActividadDTO(
+        item.getId(),
+        imagen.getUbicacion(),
+        imagen.getTextoAlt(),
+        item.getTitulo(),
+        item.getLado(),
+        esUnirFlechas ? item.getNroOrden() : null
+    );
+  }
+
+  @Override
+  @Transactional
   public ResultadoTareaDTO entregar(Usuario estudiante, Long tareaId, EntregaRequestDTO entrega) {
-    
+
     Tarea tarea = tareaRepository.findCompletaById(tareaId)
-        .orElseThrow(() -> new EntityNotFoundException("La tarea solicitada no existe"));
+        .orElseThrow(() -> new EntityNotFoundException(MSG_NO_EXISTE));
 
     validarDuenio(tarea, estudiante);
 
