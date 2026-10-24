@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.controllers;
 
+import edu.ies63.chispas2026_backend.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Import;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(TestcontainersConfiguration.class)
 class CarpetaControllerTest {
 
   private static final String URL_ACTIVIDADES = "/api/v1/mi-carpeta/materias/{id}/actividades";
