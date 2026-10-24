@@ -8,6 +8,8 @@ import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.util.TimeZone;
+
 // Base de los tests: MySQL en un contenedor (Testcontainers) con las tablas y los datos de ejemplo
 // (db/chispasEsquema.sql y db/chispasInserts.sql), la misma base que usa produccion.
 // Solo hace falta Docker: no usa el .env ni un MySQL local.
@@ -25,6 +27,9 @@ public class TestcontainersConfiguration {
       .withCopyFileToContainer(
           MountableFile.forClasspathResource("db/chispasInserts.sql"),
           "/docker-entrypoint-initdb.d/02-inserts.sql")
+      // misma zona que la JVM: NOW() de MySQL y LocalDateTime.now() de Java tienen que coincidir
+      // (en la PC la JVM usa hora argentina y el contenedor vendria en UTC)
+      .withEnv("TZ", TimeZone.getDefault().getID())
       .withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci");
 
   // @ServiceConnection completa spring.datasource.url, username y password con los del contenedor
