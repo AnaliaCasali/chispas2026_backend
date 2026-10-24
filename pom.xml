@@ -121,17 +121,15 @@
 			<version>0.2.2</version>
 		</dependency>
 
-		<!-- Testcontainers para MySQL -->
+		<!-- Testcontainers: MySQL en Docker para los tests (versiones las maneja Spring Boot) -->
 		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>mysql</artifactId>
-			<version>1.19.8</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>1.19.8</version>
+			<artifactId>testcontainers-mysql</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<!-- Soporte para simular usuarios autenticados -->

@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.controllers;
 
+import edu.ies63.chispas2026_backend.TestcontainersConfiguration;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Import;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(TestcontainersConfiguration.class)
 class TareaControllerTest {
 
   private static final String URL_ENTREGA = "/api/v1/tareas/{id}/entrega";

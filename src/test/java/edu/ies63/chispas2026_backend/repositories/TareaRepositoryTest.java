@@ -1,12 +1,14 @@
 package edu.ies63.chispas2026_backend.repositories;
 
 import edu.ies63.chispas2026_backend.models.Tarea;
+import edu.ies63.chispas2026_backend.TestcontainersConfiguration;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // Cada test corre en una transaccion que se deshace al final.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(TestcontainersConfiguration.class)
 class TareaRepositoryTest {
 
   private static final long MATEMATICA_MARIEL = 4L;
