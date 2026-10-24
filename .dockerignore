@@ -7,3 +7,5 @@ target/
 # las variables llegan por docker-compose, nunca dentro de la imagen
 .env
 src/test/resources/db/
+# configuracion del servidor, no va en la imagen
+deploy/
