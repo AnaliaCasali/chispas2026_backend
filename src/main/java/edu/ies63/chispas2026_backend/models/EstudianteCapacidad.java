@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -33,6 +34,7 @@ public class EstudianteCapacidad {
     private boolean respuesta;
 
     @UpdateTimestamp
+    @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "actualizado_en", nullable = false)
     private LocalDateTime actualizadoEn;
 }

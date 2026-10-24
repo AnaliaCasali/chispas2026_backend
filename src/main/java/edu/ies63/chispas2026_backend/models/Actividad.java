@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -38,6 +39,7 @@ public class Actividad {
     private String consigna;
 
     @CreationTimestamp
+    @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "creada_en", nullable = false, updatable = false)
     private LocalDateTime creadaEn;
 }

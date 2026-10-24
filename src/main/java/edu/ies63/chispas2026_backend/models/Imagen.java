@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import edu.ies63.chispas2026_backend.enums.OrigenImagen;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,6 +48,7 @@ public class Imagen {
     private Usuario subidaPor;
 
     @CreationTimestamp
+    @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "subida_en", nullable = false, updatable = false)
     private LocalDateTime subidaEn;
 }

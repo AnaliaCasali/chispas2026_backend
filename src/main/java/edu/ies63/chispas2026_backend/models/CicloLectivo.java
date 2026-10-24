@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class CicloLectivo {
     private LocalDate fechaFin;
 
     @Builder.Default
+    @ColumnDefault("false")
     @Column(name = "activo", nullable = false)
     private boolean activo = false;
 }

@@ -17,7 +17,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 /**
- * Carga los datos iniciales (DB/rccInserts.sql) la primera vez que arranca la aplicación.
+ * Carga los datos iniciales (db/chispasinserts.sql) la primera vez que arranca la aplicación.
  * Si ya hay usuarios, no hace nada: es seguro reiniciar el contenedor.
  */
 @Slf4j
@@ -26,7 +26,7 @@ import java.sql.Statement;
 @ConditionalOnProperty(name = "app.datos-iniciales.enabled", havingValue = "true", matchIfMissing = true)
 public class DatosInicialesConfig {
 
-  private static final String SCRIPT = "DB/chispasinserts.sql";
+  private static final String SCRIPT = "db/chispasinserts.sql";
 
   private final UsuarioRepository usuarioRepository;
   private final DataSource dataSource;
@@ -39,13 +39,21 @@ public class DatosInicialesConfig {
         return;
       }
       try (Connection con = dataSource.getConnection(); Statement st = con.createStatement()) {
+        // todo el script en una sola transacción: si falla un insert no queda la base a medias
+        boolean autoCommit = con.getAutoCommit();
+        con.setAutoCommit(false);
         // El script inserta tablas en orden alfabético: se desactivan las FK mientras corre
         st.execute("SET FOREIGN_KEY_CHECKS=0");
         try {
           ScriptUtils.executeSqlScript(con,
               new EncodedResource(new ClassPathResource(SCRIPT), StandardCharsets.UTF_8));
+          con.commit();
+        } catch (Exception e) {
+          con.rollback();
+          throw e;
         } finally {
           st.execute("SET FOREIGN_KEY_CHECKS=1");
+          con.setAutoCommit(autoCommit);
         }
       }
       log.info("Datos iniciales: se cargó {} ({} usuarios).", SCRIPT, usuarioRepository.count());

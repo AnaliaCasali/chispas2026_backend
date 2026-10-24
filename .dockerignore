@@ -6,4 +6,4 @@ target/
 *.iml
 # las variables llegan por docker-compose, nunca dentro de la imagen
 .env
-db/
+src/test/resources/db/

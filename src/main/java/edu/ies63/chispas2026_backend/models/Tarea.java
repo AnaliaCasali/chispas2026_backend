@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import edu.ies63.chispas2026_backend.enums.EstadoTarea;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,6 +49,7 @@ public class Tarea {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
+    @ColumnDefault("'PENDIENTE'")
     @Column(name = "estado", nullable = false)
     private EstadoTarea estado = EstadoTarea.PENDIENTE;
 
