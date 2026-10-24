@@ -1,0 +1,92 @@
+# Chispas en el servidor del IES 63: MySQL + backend + frontend.
+# Uso (en el servidor, dentro de esta carpeta): docker compose up -d
+# Las variables salen de deploy/.env (copiar .env.example). Sin puertos: entra por el proxy de la red ies63.
+name: chispas
+
+# logs acotados para no llenar el disco
+x-logs: &logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: mysql:8.0.33
+    container_name: chispas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: America/Argentina/Buenos_Aires
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/chispas.cnf:ro
+    networks: [internal]
+    mem_limit: 384m
+    logging: *logs
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  back:
+    image: ghcr.io/analiacasali/chispas2026_backend:${BACK_TAG:-latest}
+    container_name: chispas-back
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Hibernate crea las tablas; la primera vez se cargan los datos iniciales
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: "false"
+      DATOS_INICIALES: ${DATOS_INICIALES:-true}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 18000000
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SERVER_FORWARDHEADERSSTRATEGY: framework
+      # la JVM usa como maximo el 75% del mem_limit
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+UseSerialGC"
+      FRONTEND_URL: https://chispas.ies63lastoscas.edu.ar
+      CORS_ALLOWED_ORIGINS: https://chispas.ies63lastoscas.edu.ar
+      # en produccion no se publica Swagger
+      SPRINGDOC_SWAGGERUI_ENABLED: "false"
+      SPRINGDOC_APIDOCS_ENABLED: "false"
+      ZONA_HORARIA: America/Argentina/Buenos_Aires
+      TZ: America/Argentina/Buenos_Aires
+    networks: [internal, ies63]
+    mem_limit: 512m
+    logging: *logs
+
+  front:
+    image: ghcr.io/analiacasali/chispas2026_frontend:${FRONT_TAG:-latest}
+    container_name: chispas-front
+    restart: unless-stopped
+    environment:
+      NG_ALLOWED_HOSTS: chispas.ies63lastoscas.edu.ar
+    networks: [ies63]
+    mem_limit: 256m
+    logging: *logs
+
+volumes:
+  db_data:
+
+networks:
+  # solo back <-> db
+  internal:
+  # red del proxy del servidor (ya existe, la crea el deploy de RCC)
+  ies63:
+    external: true
+    name: ${IES63_NETWORK}
