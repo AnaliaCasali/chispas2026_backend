@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class Capacidad {
     private String pregunta;
 
     @Builder.Default
+    @ColumnDefault("1")
     @Column(name = "orden", nullable = false)
     private Integer orden = 1;
 }

@@ -1,4 +1,4 @@
-# CI: en cada PR y push a main corre los tests contra un MySQL con db/chispas_bd.sql
+# CI: en cada PR y push a main corre los tests (MySQL con Testcontainers + db/chispas_bd.sql) y el reporte JaCoCo
 # CD: al mergear a main publica la imagen Docker en GitHub Container Registry (ghcr.io)
 name: CI/CD
 
@@ -12,30 +12,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -proot --silent"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=20
-
-    # valores solo para los tests, no son los de produccion
-    env:
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3306
-      DB_NAME: chispas
-      DB_USERNAME: root
-      DB_PASSWORD: root
-      JWT_SECRET: Y2hpc3Bhcy1jaS1jbGF2ZS1kZS1wcnVlYmEtMzItYnl0ZXM=
-      MAIL_USERNAME: ci@example.com
-      MAIL_PASSWORD: ci
-
     steps:
       - uses: actions/checkout@v4
 
@@ -45,11 +21,21 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Crear la base con chispas_bd.sql
-        run: mysql -h 127.0.0.1 -uroot -proot < db/chispas_bd.sql
-
-      - name: Tests
+      # los tests levantan su propio MySQL con Testcontainers (Docker ya viene en el runner)
+      # y cargan db/chispas_bd.sql: no hace falta .env ni variables de entorno
+      - name: Tests y cobertura
         run: ./mvnw -B verify
+
+      - name: Resumen de cobertura
+        if: always()
+        run: |
+          csv=target/site/jacoco/jacoco.csv
+          [ -f "$csv" ] || exit 0
+          awk -F, 'NR>1 {lm+=$8; lc+=$9; bm+=$6; bc+=$7} END {
+            printf "### Cobertura JaCoCo\n\n| | Cubiertas | Total | %% |\n| --- | --- | --- | --- |\n"
+            printf "| Lineas | %d | %d | %.1f |\n", lc, lm+lc, lc*100/(lm+lc)
+            printf "| Ramas | %d | %d | %.1f |\n", bc, bm+bc, bc*100/(bm+bc)
+          }' "$csv" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Reporte de tests y cobertura
         if: always()

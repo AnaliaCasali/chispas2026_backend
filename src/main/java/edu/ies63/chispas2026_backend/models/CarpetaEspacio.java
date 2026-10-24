@@ -1,5 +1,6 @@
 package edu.ies63.chispas2026_backend.models;
 
+import org.hibernate.annotations.ColumnDefault;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class CarpetaEspacio {
 
     // orden en que se muestran en Mis Materias
     @Builder.Default
+    @ColumnDefault("1")
     @Column(name = "orden", nullable = false)
     private Integer orden = 1;
 }
