@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// TSDS-4: prueba la consulta findAsignadasHastaHoy contra MySQL real (chispas_bd.sql).
+// TSDS-4: prueba la consulta findAsignadasHastaHoy contra MySQL real (datos de ejemplo).
 // Trabaja sobre Matematica de Mariel (carpetaEspacio 4), que no tiene tareas de ejemplo.
 // Cada test corre en una transaccion que se deshace al final.
 @DataJpaTest

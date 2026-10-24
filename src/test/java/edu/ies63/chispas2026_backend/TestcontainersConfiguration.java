@@ -8,8 +8,9 @@ import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-// Base de los tests: MySQL en un contenedor (Testcontainers) cargado con db/chispas_bd.sql,
-// la misma base que usa produccion. Solo hace falta Docker: no usa el .env ni un MySQL local.
+// Base de los tests: MySQL en un contenedor (Testcontainers) con las tablas y los datos de ejemplo
+// (db/chispasEsquema.sql y db/chispasInserts.sql), la misma base que usa produccion.
+// Solo hace falta Docker: no usa el .env ni un MySQL local.
 // Se importa con @Import(TestcontainersConfiguration.class) en cada test que levanta Spring.
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
@@ -17,9 +18,13 @@ public class TestcontainersConfiguration {
   // un solo contenedor para toda la corrida (static), asi no arranca un MySQL por cada contexto
   static final MySQLContainer MYSQL = new MySQLContainer(DockerImageName.parse("mysql:8.4"))
       .withDatabaseName("chispas")
+      // MySQL los corre en orden al crear el contenedor: primero las tablas, despues los datos
       .withCopyFileToContainer(
-          MountableFile.forHostPath("db/chispas_bd.sql"),
-          "/docker-entrypoint-initdb.d/01-chispas_bd.sql")
+          MountableFile.forClasspathResource("db/chispasEsquema.sql"),
+          "/docker-entrypoint-initdb.d/01-esquema.sql")
+      .withCopyFileToContainer(
+          MountableFile.forClasspathResource("db/chispasInserts.sql"),
+          "/docker-entrypoint-initdb.d/02-inserts.sql")
       .withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci");
 
   // @ServiceConnection completa spring.datasource.url, username y password con los del contenedor

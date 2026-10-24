@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// test de integracion de /api/v1/auth (app completa + MySQL con chispas_bd.sql).
+// test de integracion de /api/v1/auth (app completa + MySQL con los datos de ejemplo).
 // Usa a Laura (docente@chispas.edu.ar, id 1, clave Chispas2026). El EmailService esta mockeado para no mandar mails.
 // Cada test corre en una transaccion que se deshace al final.
 @SpringBootTest

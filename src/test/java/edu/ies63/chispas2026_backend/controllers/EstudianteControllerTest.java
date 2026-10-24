@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// test de integracion del perfil del estudiante (app completa + MySQL con chispas_bd.sql).
+// test de integracion del perfil del estudiante (app completa + MySQL con los datos de ejemplo).
 // Laura (docente) tiene a Mariel (TDA y Dislexia) y a Tomás (sin condiciones) en 4to Año A.
 // Lucía (Autismo) es de Pablo en 5to Año B: Laura no la tiene asignada.
 // Cada test corre en una transaccion que se deshace al final.

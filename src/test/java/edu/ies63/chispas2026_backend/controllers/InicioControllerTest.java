@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// TSDS-6: test de integracion del Inicio (app completa + MySQL con chispas_bd.sql).
+// TSDS-6: test de integracion del Inicio (app completa + MySQL con los datos de ejemplo).
 // Mariel tiene Lengua = carpetaEspacio 3 (tarea 1 FINALIZADA y tarea 2 PENDIENTE), Historia = 5 sin tareas.
 // Las materias se buscan por carpetaEspacioId porque el orden depende del dia y la hora en que corra el test.
 // Cada test corre en una transaccion que se deshace al final.

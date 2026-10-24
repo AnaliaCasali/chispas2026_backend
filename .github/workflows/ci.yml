@@ -1,4 +1,4 @@
-# CI: en cada PR y push a main corre los tests (MySQL con Testcontainers + db/chispas_bd.sql) y el reporte JaCoCo
+# CI: en cada PR y push a main corre los tests (MySQL con Testcontainers + tablas y datos de ejemplo) y el reporte JaCoCo
 # CD: al mergear a main publica la imagen Docker en GitHub Container Registry (ghcr.io)
 name: CI/CD
 
@@ -22,7 +22,7 @@ jobs:
           cache: maven
 
       # los tests levantan su propio MySQL con Testcontainers (Docker ya viene en el runner)
-      # y cargan db/chispas_bd.sql: no hace falta .env ni variables de entorno
+      # con las tablas y los datos de ejemplo: no hace falta .env ni variables de entorno
       - name: Tests y cobertura
         run: ./mvnw -B verify
 

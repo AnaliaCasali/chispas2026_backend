@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// TSDS-4: test de integracion del endpoint de la carpeta (app completa + MySQL con chispas_bd.sql).
+// TSDS-4: test de integracion del endpoint de la carpeta (app completa + MySQL con los datos de ejemplo).
 // Usa los datos de ejemplo: Mariel (DNI 45123456) con Lengua = carpetaEspacio 3, Historia = 5 (sin tareas),
 // Tomas tiene carpetaEspacio 6. Cada test corre en una transaccion que se deshace al final.
 @SpringBootTest

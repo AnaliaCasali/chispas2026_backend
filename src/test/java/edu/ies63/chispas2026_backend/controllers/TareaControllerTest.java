@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// TSDS-13: test de integracion del endpoint de entrega (app completa + MySQL con chispas_bd.sql).
+// TSDS-13: test de integracion del endpoint de entrega (app completa + MySQL con los datos de ejemplo).
 // Usa los datos de ejemplo: Mariel (DNI 45123456) con Lengua = carpetaEspacio 3, Tomas tiene
 // carpetaEspacio 6, y la actividad 4 de UNIR_FLECHAS con sus items y pares.
 // El body de la entrega se arma leyendo los items y pares de la base, para no depender de ids fijos.

@@ -1,17 +1,18 @@
 # Levanta MySQL + backend: docker compose up --build
-# Usa las variables del .env (copiar .env.example). La base se crea con db/chispas_bd.sql
-# solo la primera vez; para recrearla: docker compose down -v
+# Usa las variables del .env (copiar .env.example). Al arrancar, el backend crea las tablas
+# (db/chispasEsquema.sql) y, si no hay usuarios, carga los datos de ejemplo (db/chispasInserts.sql).
+# Para empezar de cero: docker compose down -v
 services:
   db:
     image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-chispas}
       TZ: America/Argentina/Buenos_Aires
     ports:
       - "${DB_HOST_PORT:-3307}:3306"
     volumes:
       - chispas-db:/var/lib/mysql
-      - ./db/chispas_bd.sql:/docker-entrypoint-initdb.d/01-chispas_bd.sql:ro
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]

@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// test de integracion del horario (app completa + MySQL con chispas_bd.sql).
+// test de integracion del horario (app completa + MySQL con los datos de ejemplo).
 // Mariel (carpeta 2) cursa Lengua, Matematica e Historia; Tomas (carpeta 3) solo Lengua y Matematica,
 // los dos en 4to A (curso 1). Como depende del dia real, los tests de dia habil cargan su propio
 // horario para hoy y se saltean el fin de semana. Cada test se deshace al final.

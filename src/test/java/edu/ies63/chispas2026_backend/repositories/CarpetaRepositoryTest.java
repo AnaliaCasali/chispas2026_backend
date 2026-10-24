@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// prueba las consultas de alumnos del docente contra MySQL real (chispas_bd.sql).
+// prueba las consultas de alumnos del docente contra MySQL real (datos de ejemplo).
 // Laura (1) da Lengua en 4to A (Mariel 2 y Tomás 3). Pablo (4) da Lengua en 5to B (Lucía 5).
 // Cada test corre en una transaccion que se deshace al final.
 @DataJpaTest
