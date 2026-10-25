@@ -6,9 +6,10 @@ import lombok.*;
 
 // cada imagen de la actividad
 // en ORDENAR nroOrden es la posicion correcta, en UNIR_FLECHAS la posicion en su columna
+// en UNIR_FLECHAS una misma imagen puede ir en IZQ y en DER (ej. imagen con su frase)
 @Entity
 @Table(name = "actividad_imagen", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_ai_imagen", columnNames = {"actividad_id", "imagen_id"}),
+        @UniqueConstraint(name = "uq_ai_imagen", columnNames = {"actividad_id", "imagen_id", "lado"}),
         @UniqueConstraint(name = "uq_ai_orden", columnNames = {"actividad_id", "lado", "nro_orden"})
 })
 @Getter
