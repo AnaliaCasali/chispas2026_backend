@@ -205,7 +205,7 @@ CREATE TABLE actividad_imagen (
   titulo        VARCHAR(80)  NULL,          -- rótulo visible: "Sale de su casa"
   nro_orden     INT UNSIGNED NOT NULL,
   lado          ENUM('UNICA','IZQ','DER') NOT NULL DEFAULT 'UNICA', -- IZQ/DER solo UNIR_FLECHAS
-  CONSTRAINT uq_ai_imagen UNIQUE (actividad_id, imagen_id),
+  CONSTRAINT uq_ai_imagen UNIQUE (actividad_id, imagen_id, lado), -- en UNIR_FLECHAS la imagen puede ir en IZQ y DER
   CONSTRAINT uq_ai_orden  UNIQUE (actividad_id, lado, nro_orden),
   CONSTRAINT fk_ai_act FOREIGN KEY (actividad_id) REFERENCES actividad(id) ON DELETE CASCADE,
   CONSTRAINT fk_ai_img FOREIGN KEY (imagen_id)    REFERENCES imagen(id)
@@ -398,19 +398,26 @@ INSERT INTO actividad_imagen (id, actividad_id, imagen_id, titulo, nro_orden) VA
  (8,2,12,'Preparo la mochila',4),
  (9,2,13,'Voy a la escuela',5);
 
--- Actividad 3: UNIR_FLECHAS con 2 pares (del prototipo Figma)
+-- Actividad 3: UNIR_FLECHAS con 4 pares (las mismas imágenes de Don Quijote que ORDENAR)
+--   IZQ = la imagen, DER = la frase; la misma imagen va en los dos lados
 INSERT INTO actividad (id, contenido_id, plantilla_id, creada_por, titulo, consigna) VALUES
- (3,1,2,1,'Unir con flechas','Uní cada imagen con la que corresponde');
+ (3,1,2,1,'Unir con flechas','Uní cada imagen con la frase que corresponde');
 
 INSERT INTO actividad_imagen (id, actividad_id, imagen_id, titulo, nro_orden, lado) VALUES
- (10,3,5,'Sueño',  1,'IZQ'),
- (11,3,7,'Llave',  2,'IZQ'),
- (12,3,8,'Puerta', 1,'DER'),   -- la columna derecha se muestra mezclada
- (13,3,6,'Cama',   2,'DER');
+ (10,3,2,'Don Quijote lee', 1,'IZQ'),
+ (11,3,1,'Sale de su casa', 2,'IZQ'),
+ (12,3,4,'Vs Molinos',      3,'IZQ'),
+ (13,3,3,'Vuelve a casa',   4,'IZQ'),
+ (20,3,4,'Pelea contra los molinos de viento',1,'DER'),   -- la columna derecha se muestra mezclada
+ (21,3,2,'Lee libros de caballería',          2,'DER'),
+ (22,3,3,'Vuelve a su casa',                  3,'DER'),
+ (23,3,1,'Sale a caballo',                    4,'DER');
 
 INSERT INTO actividad_par (actividad_id, item_izq_id, item_der_id) VALUES
- (3,10,13),   -- Sueño -> Cama
- (3,11,12);   -- Llave -> Puerta
+ (3,10,21),   -- lee -> lee libros
+ (3,11,23),   -- sale -> sale a caballo
+ (3,12,20),   -- molinos -> pelea contra los molinos
+ (3,13,22);   -- vuelve -> vuelve a su casa
 
 
 -- Actividad 4: UNIR_FLECHAS con 3 pares (reutiliza imágenes 6 y 10)
