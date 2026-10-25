@@ -47,6 +47,7 @@ class TareaControllerTest {
   private static final String MARIEL = "45123456";
   private static final String TOMAS = "45654321";
   private static final long ACTIVIDAD_UNIR = 4L;   // UNIR_FLECHAS con items y pares de ejemplo
+  private static final String IMAGEN_QUIJOTE_LEE = "/images/don-quijote-leyendo.webp";
   private static final long LENGUA_MARIEL = 3L;
   private static final long MATERIA_TOMAS = 6L;
 
@@ -353,14 +354,18 @@ class TareaControllerTest {
         .andExpect(jsonPath("$.contenido.tema").value("Literatura Española"))
         .andExpect(jsonPath("$.contenido.texto").value("Don Quijote de la Mancha"))
         .andExpect(jsonPath("$.titulo").value("Unir con flechas"))
-        .andExpect(jsonPath("$.consigna").value("Uní cada imagen con la que corresponde"))
+        .andExpect(jsonPath("$.consigna").value("Uní cada imagen con la frase que corresponde"))
         .andExpect(jsonPath("$.tipoActividad.codigo").value("UNIR_FLECHAS"))
         // izquierda primero y despues derecha, cada una por su posicion
-        .andExpect(jsonPath("$.items[*].titulo", contains("Sueño", "Llave", "Puerta", "Cama")))
-        .andExpect(jsonPath("$.items[*].lado", contains("IZQ", "IZQ", "DER", "DER")))
-        .andExpect(jsonPath("$.items[*].posicion", contains(1, 2, 1, 2)))
-        .andExpect(jsonPath("$.items[0].imagenUrl").value("https://picsum.photos/seed/bostezo/300/300"))
-        .andExpect(jsonPath("$.items[0].textoAlt").value("Persona bostezando con sueño"));
+        .andExpect(jsonPath("$.items[*].titulo", contains(
+            "Don Quijote lee", "Sale de su casa", "Vs Molinos", "Vuelve a casa",
+            "Pelea contra los molinos de viento", "Lee libros de caballería", "Vuelve a su casa", "Sale a caballo")))
+        .andExpect(jsonPath("$.items[*].lado", contains("IZQ", "IZQ", "IZQ", "IZQ", "DER", "DER", "DER", "DER")))
+        .andExpect(jsonPath("$.items[*].posicion", contains(1, 2, 3, 4, 1, 2, 3, 4)))
+        .andExpect(jsonPath("$.items[0].imagenUrl").value(IMAGEN_QUIJOTE_LEE))
+        .andExpect(jsonPath("$.items[0].textoAlt").value("Don Quijote lee libros de caballería"))
+        // la misma imagen va en la columna izquierda y en la derecha
+        .andExpect(jsonPath("$.items[5].imagenUrl").value(IMAGEN_QUIJOTE_LEE));
   }
 
   // tarea 1 de ejemplo: ORDENAR ya finalizada. No se manda la posicion porque es la respuesta
