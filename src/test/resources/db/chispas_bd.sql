@@ -452,6 +452,66 @@ INSERT INTO respuesta (tarea_id, item_id, intento, posicion_elegida, es_correcta
  (1,3,1,4,FALSE),
  (1,4,1,3,FALSE);
 
+-- Contenidos (la "clase" de cada materia)
+INSERT INTO `contenido` (`id`, `espacio_curricular_id`, `tema`, `texto`, `portada_url`, `audio_url`) VALUES (3,2,'Números del 1 al 3','Contamos objetos del aula','https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/500px-Red_Apple.jpg',NULL);
+INSERT INTO `contenido` (`id`, `espacio_curricular_id`, `tema`, `texto`, `portada_url`, `audio_url`) VALUES (4,3,'Guerra de Malvinas','L','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Soldados_argentinos_en_Malvinas%2C_1982.jpg/500px-Soldados_argentinos_en_Malvinas%2C_1982.jpg',NULL);
+
+-- Imágenes
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (15,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Theodor_Fontane_Der_Stechlin.jpg/500px-Theodor_Fontane_Der_Stechlin.jpg','un-libro','Un libro',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (16,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/0/08/Pencils_hb.jpg','dos-lapices','Dos lápices',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (17,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Chairs_at_Museum_of_the_Shenandoah_Valley_-_3.jpg/500px-Chairs_at_Museum_of_the_Shenandoah_Valley_-_3.jpg','tres-sillas','Tres sillas',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (18,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/500px-Red_Apple.jpg','una-manzana','Una manzana',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (19,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Two_apples_%2829234068141%29.jpg/500px-Two_apples_%2829234068141%29.jpg','dos-manzanas','Dos manzanas',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (20,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Apples_with_black_background.jpg/500px-Apples_with_black_background.jpg','tres-manzanas','Tres manzanas',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (21,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Fuerza-A%C3%A9rea-Argentina_H%C3%A9rcules-C-130-TC-70_19092018_0631.jpg/500px-Fuerza-A%C3%A9rea-Argentina_H%C3%A9rcules-C-130-TC-70_19092018_0631.jpg','avion-hercules','Avión Hércules de la Fuerza Aérea Argentina',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (22,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/ARA_Almirante_Brown_%28D-10%29.jpg/500px-ARA_Almirante_Brown_%28D-10%29.jpg','buque-guerra','Barco de guerra',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (23,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Soldados_argentinos_en_Malvinas%2C_1982.jpg/500px-Soldados_argentinos_en_Malvinas%2C_1982.jpg','soldados-malvinas','Soldados argentinos en Malvinas, 1982',NULL,NULL,1,'2026-10-25 20:00:00');
+INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (24,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/CABA_-_Retiro_-_Monumento_a_los_Ca%C3%ADdos_en_la_Guerra_de_Malvinas_01.jpg/500px-CABA_-_Retiro_-_Monumento_a_los_Ca%C3%ADdos_en_la_Guerra_de_Malvinas_01.jpg','monumento-malvinas','Monumento a los Caídos en Malvinas',NULL,NULL,1,'2026-10-25 20:00:00');
+
+-- Actividades (plantilla 1 = ORDENAR, 2 = UNIR_FLECHAS)
+INSERT INTO `actividad` (`id`, `contenido_id`, `plantilla_id`, `creada_por`, `titulo`, `consigna`, `creada_en`) VALUES (6,3,2,1,'¿Cuántos hay?','Uní cada foto con su número','2026-10-25 20:00:00');
+INSERT INTO `actividad` (`id`, `contenido_id`, `plantilla_id`, `creada_por`, `titulo`, `consigna`, `creada_en`) VALUES (7,3,1,1,'De menos a más','Ordená de menos a más manzanas','2026-10-25 20:00:00');
+INSERT INTO `actividad` (`id`, `contenido_id`, `plantilla_id`, `creada_por`, `titulo`, `consigna`, `creada_en`) VALUES (8,4,2,1,'Malvinas 1982','Uní cada foto con su nombre','2026-10-25 20:00:00');
+INSERT INTO `actividad` (`id`, `contenido_id`, `plantilla_id`, `creada_por`, `titulo`, `consigna`, `creada_en`) VALUES (9,4,1,1,'¿Qué pasó primero?','Ordená lo que pasó en Malvinas','2026-10-25 20:00:00');
+
+-- Act. 6 UNIR Matemática: IZQ = foto, DER = número (el DER solo muestra el título)
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (40,6,17,'Tres sillas',1,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (41,6,15,'Un libro',2,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (42,6,16,'Dos lápices',3,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (43,6,15,'1',1,'DER');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (44,6,16,'2',2,'DER');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (45,6,17,'3',3,'DER');
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (12,6,41,43);
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (13,6,42,44);
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (14,6,40,45);
+
+-- Act. 7 ORDENAR Matemática: nro_orden = posición correcta (el front las mezcla)
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (46,7,18,'Una manzana',1,'UNICA');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (47,7,19,'Dos manzanas',2,'UNICA');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (48,7,20,'Tres manzanas',3,'UNICA');
+
+-- Act. 8 UNIR Historia
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (49,8,22,'Barco',1,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (50,8,23,'Soldados',2,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (51,8,21,'Avión',3,'IZQ');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (52,8,21,'AVIÓN',1,'DER');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (53,8,22,'BARCO',2,'DER');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (54,8,23,'SOLDADOS',3,'DER');
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (15,8,51,52);
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (16,8,49,53);
+INSERT INTO `actividad_par` (`id`, `actividad_id`, `item_izq_id`, `item_der_id`) VALUES (17,8,50,54);
+
+-- Act. 9 ORDENAR Historia
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (55,9,23,'1982: llegan a las islas',1,'UNICA');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (56,9,22,'Llegan los barcos ingleses',2,'UNICA');
+INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (57,9,24,'Hoy recordamos a los héroes',3,'UNICA');
+
+-- Tareas asignadas a Mariel (PENDIENTE, visibles desde hoy)
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (6,6,4,1,'2026-10-25','2026-10-26 20:00:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (7,7,4,1,'2026-10-25','2026-10-26 20:01:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (8,8,5,1,'2026-10-25','2026-10-26 20:02:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (9,9,5,1,'2026-10-25','2026-10-26 20:03:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+
 -- =====================================================================
 -- MIGRACIÓN TSDS-4 (solo para quien ya tenga la BD creada sin asignada_en)
 -- =====================================================================
