@@ -105,14 +105,6 @@ INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_
 INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (14,'EXTERNA','https://picsum.photos/seed/dientes/300/300','dientes','Sonrisa con dientes limpios',NULL,NULL,1,'2026-10-24 21:56:16');
 INSERT INTO `plantilla` (`id`, `codigo`, `nombre`, `destinatario`, `min_items`, `max_items`) VALUES (1,'ORDENAR','Ordenar la historia','Secuencia temporal',3,8);
 INSERT INTO `plantilla` (`id`, `codigo`, `nombre`, `destinatario`, `min_items`, `max_items`) VALUES (2,'UNIR_FLECHAS','Relación con imágenes','Asociación objeto-acción',2,5);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (1,1,1,1,NULL,1);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (1,2,1,2,NULL,1);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (1,3,1,4,NULL,0);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (1,4,1,3,NULL,0);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (5,24,1,NULL,29,1);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (5,25,1,NULL,28,0);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (5,26,1,NULL,30,0);
-INSERT INTO `respuesta` (`tarea_id`, `item_id`, `intento`, `posicion_elegida`, `item_unido_id`, `es_correcta`) VALUES (5,27,1,NULL,31,0);
 INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (1,1,3,1,'2026-10-16','2026-10-16 08:45:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
 INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (5,3,3,1,'2026-10-24','2026-10-24 23:16:50','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
 INSERT INTO `usuario` (`id`, `dni`, `email`, `password_hash`, `nombre`, `apellido`, `rol`, `foto_url`, `activo`, `creado_en`) VALUES (1,'20111222','docente@chispas.edu.ar','$2a$10$a4loYKgOGxdGNrl8iJmGkeEoJhtvsOzvF.x00vh8OTQPT6OoTF39K','Laura','Gómez','DOCENTE',NULL,1,'2026-10-24 21:56:16');
