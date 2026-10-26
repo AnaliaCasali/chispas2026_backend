@@ -115,7 +115,7 @@ INSERT INTO `usuario` (`id`, `dni`, `email`, `password_hash`, `nombre`, `apellid
 
 -- Contenidos (la "clase" de cada materia)
 INSERT INTO `contenido` (`id`, `espacio_curricular_id`, `tema`, `texto`, `portada_url`, `audio_url`) VALUES (3,2,'Números del 1 al 3','Contamos objetos del aula','https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/500px-Red_Apple.jpg',NULL);
-INSERT INTO `contenido` (`id`, `espacio_curricular_id`, `tema`, `texto`, `portada_url`, `audio_url`) VALUES (4,3,'Guerra de Malvinas','L','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Soldados_argentinos_en_Malvinas%2C_1982.jpg/500px-Soldados_argentinos_en_Malvinas%2C_1982.jpg',NULL);
+INSERT INTO `contenido` (`id`, `espacio_curricular_id`, `tema`, `texto`, `portada_url`, `audio_url`) VALUES (4,3,'Guerra de Malvinas','Las Malvinas son y serán Argentinas','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Soldados_argentinos_en_Malvinas%2C_1982.jpg/500px-Soldados_argentinos_en_Malvinas%2C_1982.jpg',NULL);
 
 -- Imágenes
 INSERT INTO `imagen` (`id`, `origen`, `ubicacion`, `nombre`, `texto_alt`, `mime_type`, `tamanio_kb`, `subida_por`, `subida_en`) VALUES (15,'EXTERNA','https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Theodor_Fontane_Der_Stechlin.jpg/500px-Theodor_Fontane_Der_Stechlin.jpg','un-libro','Un libro',NULL,NULL,1,'2026-10-25 20:00:00');
@@ -168,7 +168,7 @@ INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nr
 INSERT INTO `actividad_imagen` (`id`, `actividad_id`, `imagen_id`, `titulo`, `nro_orden`, `lado`) VALUES (57,9,24,'Hoy recordamos a los héroes',3,'UNICA');
 
 -- Tareas asignadas a Mariel (PENDIENTE, visibles desde hoy)
-INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (6,6,4,1,'2026-10-25','2026-10-26 20:00:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
-INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (7,7,4,1,'2026-10-25','2026-10-26 20:01:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
-INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (8,8,5,1,'2026-10-25','2026-10-26 20:02:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
-INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (9,9,5,1,'2026-10-25','2026-10-26 20:03:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (6,6,4,1,'2026-10-26','2026-10-26 20:00:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (7,7,4,1,'2026-10-26','2026-10-26 20:01:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (8,8,5,1,'2026-10-26','2026-10-26 20:02:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `tarea` (`id`, `actividad_id`, `carpeta_espacio_id`, `asignada_por`, `fecha_asignacion`, `asignada_en`, `estado`, `iniciada_en`, `finalizada_en`, `duracion_minutos`, `aciertos`, `total_items`) VALUES (9,9,5,1,'2026-10-26','2026-10-26 20:03:00','PENDIENTE',NULL,NULL,NULL,NULL,NULL);
